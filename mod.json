@@ -1,0 +1,9 @@
+{
+	"geode": "2.0.0-beta.21",
+	"gd": "2.204",
+	"version": "v0.0.1",
+	"id": "flafy.nong",
+	"name": "Nong",
+	"developer": "Flafy",
+	"description": "Automatically download NONG songs for levels"
+}
