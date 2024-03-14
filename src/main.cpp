@@ -21,8 +21,11 @@ using namespace geode::prelude;
  * the class you are modifying, or you will get a compile error.
  */
 #include <Geode/modify/MenuLayer.hpp>
+#include <Geode/ui/BasedButtonSprite.hpp>
 #include <Geode/binding/CustomSongWidget.hpp>
 #include <Geode/modify/CustomSongWidget.hpp>
+#include <Geode/modify/EditorUI.hpp>
+#include <Geode/modify/EditButtonBar.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/binding/SongInfoObject.hpp>
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
@@ -40,9 +43,6 @@ using namespace geode::prelude;
 #include <sstream>
 #include "Geode/loader/Log.hpp"
 
-#include <filesystem>
-namespace fs = std::filesystem;
-
 //STBI_NO_JPEG
 //STBI_NO_PNG
 #define STBI_NO_BMP
@@ -54,17 +54,20 @@ namespace fs = std::filesystem;
 #define STBI_NO_PNM
 #define STBI_NO_SIMD
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb/stb_image_write.h"
+// #define STB_IMAGE_IMPLEMENTATION
+// #include "stb/stb_image.h"
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #include "stb/stb_image_write.h"
+//
+// #include "geometrize/shaperesult.h"
+// #include "geometrize/bitmap/bitmap.h"
+// #include "geometrize/bitmap/rgba.h"
+// #include "geometrize/runner/imagerunner.h"
+// #include "geometrize/runner/imagerunneroptions.h"
+// #include "geometrize/shape/circle.h"
 
-#include "geometrize/shaperesult.h"
-#include "geometrize/bitmap/bitmap.h"
-#include "geometrize/bitmap/rgba.h"
-#include "geometrize/runner/imagerunner.h"
-#include "geometrize/runner/imagerunneroptions.h"
-#include "geometrize/shape/circle.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 
 // #include <fmt/format.h>
@@ -154,257 +157,254 @@ namespace fs = std::filesystem;
 // 	}
 // };
 
-// geometrize::Bitmap readImageFromClipboard()
-// {
-// 	if (!OpenClipboard(nullptr))
-// 	{
-// 		std::cout << "Failed to open clipboard." << std::endl;
-// 		return geometrize::Bitmap(0, 0, geometrize::rgba{0, 0, 0, 0});
-// 	}
-//
-//   std::cout<<"Format Bitmap: "<<IsClipboardFormatAvailable(CF_BITMAP)<<"\n";
-//   std::cout<<"Format DIB: "<<IsClipboardFormatAvailable(CF_DIB)<<"\n";
-//   std::cout<<"Format DIBV5: "<<IsClipboardFormatAvailable(CF_DIBV5)<<"\n";
-//   std::cout<<"Format DIF: "<<IsClipboardFormatAvailable(CF_DIF)<<"\n";
-//   std::cout<<"Format DSPBITMAP: "<<IsClipboardFormatAvailable(CF_DSPBITMAP)<<"\n";
-//   std::cout<<"Format DSPENHMETAFILE: "<<IsClipboardFormatAvailable(CF_DSPENHMETAFILE)<<"\n";
-//   std::cout<<"Format DSPMETAFILEPICT: "<<IsClipboardFormatAvailable(CF_DSPMETAFILEPICT)<<"\n";
-//   std::cout<<"Format DSPTEXT: "<<IsClipboardFormatAvailable(CF_DSPTEXT)<<"\n";
-//   std::cout<<"Format ENHMETAFILE: "<<IsClipboardFormatAvailable(CF_ENHMETAFILE)<<"\n";
-//   std::cout<<"Format GDIOBJFIRST: "<<IsClipboardFormatAvailable(CF_GDIOBJFIRST)<<"\n";
-//   std::cout<<"Format GDIOBJLAST: "<<IsClipboardFormatAvailable(CF_GDIOBJLAST)<<"\n";
-//   std::cout<<"Format HDROP: "<<IsClipboardFormatAvailable(CF_HDROP)<<"\n";
-//   std::cout<<"Format LOCALE: "<<IsClipboardFormatAvailable(CF_LOCALE)<<"\n";
-//   std::cout<<"Format METAFILEPICT: "<<IsClipboardFormatAvailable(CF_METAFILEPICT)<<"\n";
-//   std::cout<<"Format OEMTEXT: "<<IsClipboardFormatAvailable(CF_OEMTEXT)<<"\n";
-//   std::cout<<"Format OWNERDISPLAY: "<<IsClipboardFormatAvailable(CF_OWNERDISPLAY)<<"\n";
-//   std::cout<<"Format PALETTE: "<<IsClipboardFormatAvailable(CF_PALETTE)<<"\n";
-//   std::cout<<"Format PENDATA: "<<IsClipboardFormatAvailable(CF_PENDATA)<<"\n";
-//   std::cout<<"Format PRIVATEFIRST: "<<IsClipboardFormatAvailable(CF_PRIVATEFIRST)<<"\n";
-//   std::cout<<"Format PRIVATELAST: "<<IsClipboardFormatAvailable(CF_PRIVATELAST)<<"\n";
-//   std::cout<<"Format RIFF: "<<IsClipboardFormatAvailable(CF_RIFF)<<"\n";
-//   std::cout<<"Format SYLK: "<<IsClipboardFormatAvailable(CF_SYLK)<<"\n";
-//   std::cout<<"Format TEXT: "<<IsClipboardFormatAvailable(CF_TEXT)<<"\n";
-//   std::cout<<"Format TIFF: "<<IsClipboardFormatAvailable(CF_TIFF)<<"\n";
-//   std::cout<<"Format UNICODETEXT: "<<IsClipboardFormatAvailable(CF_UNICODETEXT)<<"\n";
-//   std::cout<<"Format WAVE: "<<IsClipboardFormatAvailable(CF_WAVE)<<"\n";
-//
-//   std::string clipboardText;
-//
-//   HANDLE hData = GetClipboardData(CF_TEXT);
-//   if (hData != nullptr) {
-//       char* pszText = static_cast<char*>(GlobalLock(hData));
-//       if (pszText != nullptr) {
-//           clipboardText = pszText;
-//           GlobalUnlock(hData);
-//       }
-//   }
-//   CloseClipboard();
-//
-//
-//   std::cout<<"Clipboard text: "<<clipboardText <<"\n";
-//
-// 	HBITMAP hBitmap = static_cast<HBITMAP>(GetClipboardData(CF_BITMAP));
-// 	if (!hBitmap)
-// 	{
-// 		std::cout << "No image found on the clipboard." << std::endl;
-// 		CloseClipboard();
-// 		return geometrize::Bitmap(0, 0, geometrize::rgba{0, 0, 0, 0});
-// 	}
-//
-// 	BITMAP win_bitmap;
-// 	if (!GetObject(hBitmap, sizeof(BITMAP), &win_bitmap))
-// 	{
-// 		std::cout << "Failed to retrieve bitmap information." << std::endl;
-// 		CloseClipboard();
-// 		return geometrize::Bitmap(0, 0, geometrize::rgba{0, 0, 0, 0});
-// 	}
-//
-// 	HDC hdc = GetDC(nullptr);
-// 	HDC hMemDC = CreateCompatibleDC(hdc);
-// 	HBITMAP hOldBitmap = static_cast<HBITMAP>(SelectObject(hMemDC, hBitmap));
-//
-// 	std::uint32_t image_w = static_cast<std::uint32_t>(win_bitmap.bmWidth);
-// 	std::uint32_t image_h = static_cast<std::uint32_t>(win_bitmap.bmHeight);
-// 	
-// 	geometrize::Bitmap bitmap(image_w, image_h, geometrize::rgba{0, 0, 0, 0});
-// 	
-// 	//idk how to use win bitmap data
-// 	for (std::uint32_t y = 0; y < image_h / 2; ++y)
-// 	{
-// 		for (std::uint32_t x = 0; x < image_w; ++x)
-// 		{
-// 			COLORREF topPixel = GetPixel(hMemDC, x, y);
-// 			COLORREF bottomPixel = GetPixel(hMemDC, x, image_h - y - 1);
-// 	
-// 			std::uint8_t topRed = GetRValue(topPixel);
-// 			std::uint8_t topGreen = GetGValue(topPixel);
-// 			std::uint8_t topBlue = GetBValue(topPixel);
-// 			std::uint8_t topAlpha = topPixel >> 24;
-// 			bitmap.setPixel(x, image_h - y - 1, {topRed, topGreen, topBlue, topAlpha});
-//
-// 			std::uint8_t bottomRed = GetRValue(bottomPixel);
-// 			std::uint8_t bottomGreen = GetGValue(bottomPixel);
-// 			std::uint8_t bottomBlue = GetBValue(bottomPixel);
-// 			std::uint8_t bottomAlpha = bottomPixel >> 24;
-// 	
-// 			bitmap.setPixel(x, y, {bottomRed, bottomGreen, bottomBlue, bottomAlpha});
-// 		}
-// 	}
-// 	
-// 	SelectObject(hMemDC, hOldBitmap);
-// 	DeleteDC(hMemDC);
-// 	ReleaseDC(nullptr, hdc);
-// 	CloseClipboard();
-// 	return bitmap;
-// }
-
-geometrize::Bitmap readImage(const std::string& filePath)
+std::string readJsonFromClipboard()
 {
-	if(filePath.empty()) {
-		return geometrize::Bitmap(0, 0, geometrize::rgba{0, 0, 0, 0});
-	}
-	
-	const char* path{filePath.c_str()};
-	int w = 0;
-	int h = 0;
-	stbi_set_flip_vertically_on_load(true);
-	std::uint8_t* dataPtr{stbi_load(path, &w, &h, nullptr, 4)};
-	if(dataPtr == nullptr) {
-		return geometrize::Bitmap(0, 0, geometrize::rgba{0, 0, 0, 0});
-	}
-	const std::vector<std::uint8_t> data{dataPtr, dataPtr + (w * h * 4)};
-	delete dataPtr;
-
-	const geometrize::Bitmap bitmap(static_cast<std::uint32_t>(w), static_cast<std::uint32_t>(h), data);
-	return bitmap;
-}
-
-
-geometrize::ShapeTypes shapeTypesForNames(const std::string& str)
-{
-	// Split string into words based on whitespace
-	std::istringstream iss(str);
-	const std::vector<std::string> shapeNames(std::istream_iterator<std::string>{iss},
-									std::istream_iterator<std::string>());
-	
-	std::vector<geometrize::ShapeTypes> shapeTypes;
-	
-	// Convert the shape names into ShapeTypes
-	for(const std::string& shapeName : shapeNames) {
-		for(const std::pair<geometrize::ShapeTypes, std::string>& p : geometrize::shapeTypeNames) {
-			if(p.second == shapeName) {
-				shapeTypes.push_back(p.first);
-			}
-		}
-	}
-	
-	if(shapeTypes.empty()) {
-		std::cout << "Bad shape names provided, defaulting to ellipses \n";
-		return geometrize::ELLIPSE;
-	}
-	
-	// Combine shape types together
-	std::underlying_type<geometrize::ShapeTypes>::type combinedShapeTypes = 0;
-	for (const auto& shapeType : shapeTypes) {
-		combinedShapeTypes |= shapeType;
-	}
-	return geometrize::ShapeTypes(combinedShapeTypes);
-}
-
-
-void addImage(geometrize::Bitmap bitmap, int totalShapes, int shapesPerStep)
-{
-	if(bitmap.getWidth() == 0 || bitmap.getHeight() == 0)
+	if (!OpenClipboard(nullptr))
 	{
-		return;
+		std::cout << "Failed to open clipboard." << std::endl;
+		return "";
 	}
 
-  std::vector<geometrize::ShapeResult> shape_data;
-	
-	geometrize::ImageRunnerOptions options;
-  options.maxThreads = 6;
-	// options.shapeCount = 10;
-	// options.alpha = 128;
-	// options.maxShapeMutations = 86;
-	// options.shapeTypes = shapeTypesForNames("circle");
+  if (!IsClipboardFormatAvailable(CF_TEXT)) {
+		std::cout << "Clipboard isn't text." << std::endl;
+    return "";
+  }
 
-    // geometrize::ShapeTypes shapeTypes = geometrize::ShapeTypes::ELLIPSE; ///< The shape types that the image runner shall use.
-    // std::uint8_t alpha = 128U; ///< The alpha/opacity of the shapes (0-255).
-    // std::uint32_t shapeCount = 50U; ///< The number of candidate shapes that will be tried per model step.
-    // std::uint32_t maxShapeMutations = 100U; ///< The maximum number of times each candidate shape will be modified to attempt to find a better fit.
-    // std::uint32_t seed = 9001U; ///< The seed for the random number generators used by the image runner.
-    // std::uint32_t maxThreads = 0; ///< The maximum number of separate threads for the implementation to use. 0 lets the implementation choose a reasonable number.
-    // ImageRunnerShapeBoundsOptions shapeBounds{}; ///< If zero or do not form a rectangle, the entire target image is used i.e. (0, 0, imageWidth, imageHeight)
-	
-	geometrize::ImageRunner runner(bitmap);
-  int drawn_shapes = 0;
-	
-	// SHAPE_LOCK.lock();
-	// SHAPE_LOCK.unlock();
-	
-	while(totalShapes > shape_data.size())
-	{
-		const std::vector<geometrize::ShapeResult> shapes{runner.step(options)};
-		// SHAPE_LOCK.lock();
-		for(const auto& shape : shapes)
-		{
-      log::info("SHAPE!! {}", shape_data.size());
-      switch(shape.shape->getType())
-      {
-        case geometrize::ShapeTypes::CIRCLE:
-        {
-          geometrize::rgba color = shape.color;
-          auto circle = dynamic_cast<geometrize::Circle*>(shape.shape.get());
-          // log::info("STEP: {} | Circle | x: {}, y: {}, r: {}, RGBA: {},{},{},{}",
-          //   step, circle->m_x, circle->m_y, circle->m_r, color.r, color.g, color.b, color.a);
-        }
+  std::string clipboardText;
+
+  HANDLE hData = GetClipboardData(CF_TEXT);
+  if (hData != nullptr) {
+      char* pszText = static_cast<char*>(GlobalLock(hData));
+      if (pszText != nullptr) {
+          clipboardText = pszText;
+          GlobalUnlock(hData);
       }
-			shape_data.push_back(shape);
-		}
-		// SHAPE_LOCK.unlock();
-	}
-	// disableUpdateHook();
+  }
+
+  CloseClipboard();
+
+  return clipboardText;
 }
+
+void RGBtoHSV(int r, int g, int b, float& h, float& s, float& v)
+{
+	auto _max = [](auto a, auto b) -> auto {
+		return a > b ? a : b;
+	};
+
+	auto _min = [](auto a, auto b) -> auto {
+		return a < b ? a : b;
+	};
+
+	// Normalize RGB values to the range of 0 to 1
+	float r_normalized = r / 255.0;
+	float g_normalized = g / 255.0;
+	float b_normalized = b / 255.0;
+
+	// Calculate value (maximum of RGB values)
+	v = _max(_max(r_normalized, g_normalized), b_normalized);
+
+	// Calculate saturation
+	if (v == 0)
+		s = 0;
+	else
+		s = (v - _min(_min(r_normalized, g_normalized), b_normalized)) / v;
+
+	// Calculate hue
+	if (s == 0)
+		h = 0;
+	else
+	{
+		float delta = v - _min(_min(r_normalized, g_normalized), b_normalized);
+		if (v == r_normalized)
+			h = 60 * (g_normalized - b_normalized) / delta;
+		else if (v == g_normalized)
+			h = 60 * (2 + (b_normalized - r_normalized) / delta);
+		else if (v == b_normalized)
+			h = 60 * (4 + (r_normalized - g_normalized) / delta);
+
+		if (h < 0)
+			h += 360;
+	}
+}
+
+
+class $modify(MyEditButtonBar, EditButtonBar) {
+  bool init(cocos2d::CCArray* p0, cocos2d::CCPoint p1, int p2, bool p3, int p4, int p5) {
+    // "Trigger" group
+    if (p2 == 12) {
+      auto spr = ButtonSprite::create(".");
+      //
+      auto btn = CCMenuItemSpriteExtra::create(
+          spr, this, menu_selector(MyEditButtonBar::onGeometrize)
+      );
+
+      p0->addObject(btn);
+    }
+    if (!EditButtonBar::init(p0, p1, p2, p3, p4, p5)) return false;
+    return true;
+  }
+
+	void onGeometrize(CCObject*) {
+    EditorUI* editorUI = GameManager::get()->getEditorLayer()->m_editorUI;
+    // editorUI->pasteObjects(readJsonFromClipboard(), false);
+
+    // std::string clipboardText2 = readJsonFromClipboard();
+    // if (clipboardText2 == "a") {
+    //   gd::string aa1 = "1,3621,2,30,3,30";
+    //   GameManager::get()->getEditorLayer()->createObjectsFromString(aa1, false, false);
+    // } else if (clipboardText2 == "b") {
+    //   gd::string aa2 = "1,3621,2,0,3,0";
+    //   GameManager::get()->getEditorLayer()->createObjectsFromString(aa2, false, false);
+    // } else {
+    //   gd::string aa3 = "1,3621,2,0,3,0,32,0.5";
+    //   GameManager::get()->getEditorLayer()->createObjectsFromString(aa3, false, false);
+    // }
+    //
+    // return;
+
+    if (editorUI->m_selectedObject == NULL) return;
+
+    double start_x = editorUI->m_selectedObject->m_realXPosition;
+    double start_y = editorUI->m_selectedObject->m_realYPosition;
+
+    // log::info("obj: {}", editorUI->m_selectedObject->m_objectID);
+
+    std::string clipboardText = readJsonFromClipboard();
+
+    json clipboardJson = json::parse(clipboardText, nullptr, false);
+    if (clipboardJson.is_discarded()) return;
+
+    std::string objects = "";
+    int shapes_drawn = 0;
+    cocos2d::CCArray* arr = cocos2d::CCArray::create();
+    int groupId = GameManager::get()->getEditorLayer()->getNextFreeGroupID(arr);
+    int transparentGroupId = 1; // TODO: Figure groups out. Group for each opacity and then automatic alpha trigger placements?
+
+    for (auto& [key, value] : clipboardJson.items()) {
+      auto obj = value.get<json>();
+
+      float h,s,v,a;
+      RGBtoHSV(obj["color"][0].template get<int>(), obj["color"][1].template get<int>(), obj["color"][2].template get<int>(), h, s, v);
+      a = obj["color"][3].template get<int>();
+
+      std::string hsv_string = fmt::format("{:.2f}a{:.2f}a{:.2f}a1a1", h, s, v);
+
+      int type = obj["type"].template get<int>();
+      switch (type) {
+        case 0: // Rectangle
+          int x1 = obj["data"][0].template get<int>();
+          int y1 = obj["data"][1].template get<int>();
+          int x2;
+          int y2;
+          int angle;
+          if (type == 0) { // Rectangle
+            x1 = obj["data"][2].template get<int>();
+            y1 = obj["data"][2].template get<int>();
+            angle = 0;
+          } else if (type == 4) { // Rotated Ellipses
+            // radius_x = obj["data"][2].template get<int>();
+            // radius_y = obj["data"][3].template get<int>();
+            // angle = obj["data"][4].template get<int>();
+          }
+          const double sprite_size = 30.0;
+          double x = (x1 + x2)/2.0;
+          double y = (y1 + y2)/2.0;
+          double scaling_x = std::abs(x2-x1) / sprite_size;
+          double scaling_y = std::abs(y2-y1) / sprite_size;
+          objects += std::format(
+            "1,211,2,{},3,{},128,{},129,{},41,1,42,1,43,{},44,{},25,{},21,{},20,{},6,{},57,{};",
+            start_x + x, start_y - y, scaling_x, scaling_y, hsv_string, hsv_string, shapes_drawn, 1010, 0, angle, groupId
+          );
+          shapes_drawn++;
+          break;
+          
+        case 5: // Circle
+        case 4: // Rotated Ellipses
+          int x = obj["data"][0].template get<int>();
+          int y = obj["data"][1].template get<int>();
+          int radius_x;
+          int radius_y;
+          int angle;
+          if (type == 5) { // Circle
+            radius_x = obj["data"][2].template get<int>();
+            radius_y = obj["data"][2].template get<int>();
+            angle = 0;
+          } else if (type == 4) { // Rotated Ellipses
+            radius_x = obj["data"][2].template get<int>();
+            radius_y = obj["data"][3].template get<int>();
+            angle = obj["data"][4].template get<int>();
+          } else if (type == 2) { // Ellipses
+            radius_x = obj["data"][2].template get<int>();
+            radius_y = obj["data"][3].template get<int>();
+            angle = 0;
+          }
+
+          const double sprite_size = 30.0;
+          double scaling_x = radius_x / (sprite_size / 2); // Divide sprite size by 2 because it's the diameter.
+          double scaling_y = radius_y / (sprite_size / 2);
+          objects += std::format(
+            "1,3621,2,{},3,{},128,{},129,{},41,1,42,1,43,{},44,{},25,{},21,{},20,{},6,{},57,{};",
+            start_x + x, start_y - y, scaling_x, scaling_y, hsv_string, hsv_string, shapes_drawn, 1010, 0, angle, groupId
+          );
+          shapes_drawn++;
+          break;
+      }
+    }
+
+    // editorUI->pasteObjects("1,1,2,15,3,15", true);
+    // gd::string aa = "1,1,2,15,3,15";
+    GameManager::get()->getEditorLayer()->createObjectsFromString(objects, false, false);
+    log::info("Geometrize!");
+	}
+};
+
+// class $modify(EditorUI) {
+// };
+//
+class $modify(EditorUI) {
+  // cocos2d::CCArray* pasteObjects(gd::string g0, bool p1) {
+  //       log::info("WHYYYYYY");
+  //       log::info("hello: {}", g0.data());
+  //       EditorUI::pasteObjects(g0, p1);
+  //       return cocos2d::CCArray::create();
+  //   }
+
+    bool init(LevelEditorLayer* editorLayer) {
+        if (!EditorUI::init(editorLayer)) return false;
+
+        // auto label = CCLabelBMFont::create("Hello world!", "bigFont.fnt");
+        // label->setPosition(100, 100);
+        // this->addChild(label);
+
+        // some CCMenu*
+        // m_tabsMenu->addChild(btn);
+        // m_tabsMenu->addChild(btn);
+       // log::info("Obj: {}", m_tabsArray->count());
+       // log::info("Obj: {}", m_editButtonDict->allKeys()->count());
+        // m_editButtonBar->addButton(btn, false);
+
+        return true;
+    }
+};
 
 class $modify(JBLevelInfoLayer, LevelInfoLayer) {
   bool init(GJGameLevel* level, bool p1) {
     if (!LevelInfoLayer::init(level, p1)) {
       return false;
     }
-    log::info("Level info layer initialized {}", level->m_creatorName);
+    // log::info("Level info layer initialized {}", level->m_creatorName);
+    // log::info("Clipboard: {}", readJsonFromClipboard());
 
-    file::FilePickOptions options = {
-        std::nullopt,
-        {}
-    };
 
-    geometrize::Bitmap _bitmap = geometrize::Bitmap(0, 0, geometrize::rgba{0, 0, 0, 0});
-    _bitmap = readImage("Z:\\home\\flafy\\Downloads\\hhkey.png");
-    addImage(_bitmap, 20, 1);
+            // try {
 
-    // auto callback = [this](ghc::filesystem::path result) {
-    //     auto path = fs::path(result.c_str());
-    //     #ifdef GEODE_IS_WINDOWS
-    //     auto strPath = geode::utils::string::wideToUtf8(result.c_str());
-    //     #else
-    //     std::string strPath = result.c_str();
-    //     #endif
+    // json ex1 = json::parse();
+    //                        } catch (const std::exception& e) {
     //
-    //     geometrize::Bitmap _bitmap = geometrize::Bitmap(0, 0, geometrize::rgba{0, 0, 0, 0});
-    //     _bitmap = readImage(strPath);
-    // };
-    //
-    // auto failedCallback = []() {
-    //     FLAlertLayer::create("Error", "Failed to open file", "Ok")->show();
-    // };
-    //
-    // file::pickFile(
-    //     file::PickMode::OpenFile,
-    //     options,
-    //     callback,
-    //     failedCallback
-    // );
+    // log::info("oof");
+    //                        }
+
 
     return true;
   }

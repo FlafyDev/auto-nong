@@ -1,3 +1,9 @@
 [submodule "libs/geometrize-lib"]
 	path = libs/geometrize-lib
 	url = git@github.com:Tw1ddle/geometrize-lib.git
+[submodule "libs/nlohmann"]
+	path = libs/nlohmann
+	url = https://github.com/nlohmann/json
+[submodule "libs/json"]
+	path = libs/json
+	url = git@github.com:nlohmann/json.git

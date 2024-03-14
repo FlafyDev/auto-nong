@@ -7,8 +7,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 project(Nong VERSION 1.0.0)
 
 file(GLOB_RECURSE SOURCES
-    libs/geometrize-lib/geometrize/geometrize/*.cpp
-    libs/geometrize-lib/geometrize/geometrize/bitmap/*.cpp
+    libs/json
     src/*.cpp
 )
 
@@ -31,8 +30,7 @@ endif()
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 
-target_include_directories(${PROJECT_NAME} PRIVATE libs/stb)
-target_include_directories(${PROJECT_NAME} PRIVATE libs/geometrize-lib/geometrize)
+target_include_directories(${PROJECT_NAME} PRIVATE libs/json/include/)
 
 # add_library(${PROJECT_NAME} ${GEOMETRIZE_SRC})
 
