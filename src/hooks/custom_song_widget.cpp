@@ -2,15 +2,16 @@
 #include "../managers/auto_nong_manager.hpp"
 #include "../types/serializable_vector.hpp"
 #include "../ui/an_dropdown_layer.hpp"
-#include <ranges>
 
 struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> {
   bool m_showNong;
   CCMenu *m_nongMenu;
 
   std::set<int> getSongIds() {
-    auto kv = std::views::keys(m_songs);
-    std::set<int> songIds{kv.begin(), kv.end()};
+    std::set<int> songIds;
+    for (const auto& pair : m_songs) {
+        songIds.insert(pair.first);
+    }
     songIds.insert(m_songInfoObject->m_songID);
     return songIds;
   }

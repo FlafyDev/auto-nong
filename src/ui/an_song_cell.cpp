@@ -68,7 +68,7 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   m_artistNameLabel->setID("artist-name");
 
   m_sourceLabel = CCLabelBMFont::create(
-      std::format("{} : {}", getSubstringAfterSlash(m_anSong->m_index), m_anSong->getSource())
+      fmt::format("{} : {}", getSubstringAfterSlash(m_anSong->m_index), m_anSong->getSource())
           .c_str(),
       "goldFont.fnt");
   m_sourceLabel->limitLabelWidth(120.f, 0.7f, 0.1f);
@@ -135,16 +135,16 @@ fs::path ANSongCell::getFileDownloadPath(bool create) {
     const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong);
     const std::string videoId = ytSong->m_ytId;
     if (create) {
-      fs::create_directory(std::format("{}\\youtube", Mod::get()->getSaveDir().string()));
+      fs::create_directory(fmt::format("{}\\youtube", Mod::get()->getSaveDir().string()));
     }
-    return std::format("{}\\youtube\\{}.mp3", Mod::get()->getSaveDir().string(), videoId);
+    return fmt::format("{}\\youtube\\{}.mp3", Mod::get()->getSaveDir().string(), videoId);
   }
   if (typeid(*m_anSong) == typeid(ANHostSong)) {
     const ANHostSong *hostSong = static_cast<ANHostSong *>(m_anSong);
     if (create) {
-      fs::create_directory(std::format("{}\\host", Mod::get()->getSaveDir().string()));
+      fs::create_directory(fmt::format("{}\\host", Mod::get()->getSaveDir().string()));
     }
-    return std::format("{}\\host\\{}.mp3", Mod::get()->getSaveDir().string(),
+    return fmt::format("{}\\host\\{}.mp3", Mod::get()->getSaveDir().string(),
                        urlToFilename(hostSong->m_url));
   }
   return "";
@@ -173,7 +173,7 @@ void ANSongCell::downloadFromYtDlp() {
   std::thread commandThread([this, ytSong, ytDlpCommand]() {
     std::string command = ytDlpCommand;
 
-    int result = std::system(std::format("\"{}\"", command).c_str());
+    int result = std::system(fmt::format("\"{}\"", command).c_str());
 
     log::info("command({}): {}", result, command);
 
@@ -205,7 +205,7 @@ void ANSongCell::downloadFromCobalt() {
   const std::string videoId = ytSong->m_ytId;
 
   std::unordered_map<std::string, std::string> parameters = {
-      {"url", std::format("https://www.youtube.com/watch?v={}", videoId)},
+      {"url", fmt::format("https://www.youtube.com/watch?v={}", videoId)},
       {"aFormat", "mp3"},
       {"isAudioOnly", "true"}};
 

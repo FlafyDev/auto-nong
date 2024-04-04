@@ -12,7 +12,7 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   auto contentSize = m_mainLayer->getContentSize();
 
   auto manifestLabel = CCLabelBMFont::create(
-      std::format("{} / {}", popupNumber, totalPopups).c_str(), "chatFont.fnt");
+      fmt::format("{} / {}", popupNumber, totalPopups).c_str(), "chatFont.fnt");
   manifestLabel->setPosition(contentSize.width / 2, 13.f);
   manifestLabel->limitLabelWidth(140.f, 0.6f, 0.1f);
   manifestLabel->setColor(cc3x(0xc2c2c2));
@@ -20,7 +20,7 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   m_mainLayer->addChild(manifestLabel);
 
   auto titleLabel =
-      CCLabelBMFont::create(std::format("Replace song for {}", songId).c_str(), "goldFont.fnt");
+      CCLabelBMFont::create(fmt::format("Replace song for {}", songId).c_str(), "goldFont.fnt");
   titleLabel->setPosition(contentSize.width / 2, contentSize.height - 22.f);
   titleLabel->limitLabelWidth(contentSize.width - 40.f, 1.5f, 0.1f);
   titleLabel->setID("title-label");
