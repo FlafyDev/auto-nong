@@ -2,7 +2,7 @@
 	"geode": "2.0.0-beta.23",
 	"gd": "2.204",
 	"version": "v0.0.1",
-	"id": "flafy.nong",
+	"id": "flafy.autonong",
 	"name": "Auto Nong",
 	"developer": "Flafy",
 	"description": "Automatically download NONG songs for levels",
