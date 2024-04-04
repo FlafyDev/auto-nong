@@ -2,7 +2,7 @@
 A GD mod that can automatically find and download NONG songs when entering a Geometry Dash level.
 
 ## Mod Dependencies 
-This mod requires [Jukebox](https://github.com/Fleeym/jukebox) version `>=cf151ee`.
+This mod requires [Jukebox](https://github.com/Fleeym/jukebox) version `>=2.6.0`.
 
 ## Indexes
 The mod works by downloading compressed JSON files(called indexes) when starting GD.  
