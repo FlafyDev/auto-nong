@@ -44,10 +44,19 @@
             self.packages.${system}.geode-cli
             self.packages.${system}.xwin
           ]);
-          runScript = pkgs.writeShellScript "fhs-script" ''
+          runScript = let
+            jukeboxBindings = pkgs.fetchFromGitHub {
+              owner = "Fleeym";
+              repo = "sapphire-bindings";
+              rev = "nongd";
+              hash = "sha256-gc9GQxIYrlvr3Qnf1gKzOYSFxBB+A+eZFh1gvRz2q/A=";
+            };
+          in pkgs.writeShellScript "fhs-script" ''
             export GEODE_SDK="$HOME/Documents/Geode/"
             export SPLAT_DIR=$HOME/.cache/geode/splat
             export TOOLCHAIN=$HOME/.cache/geode/toolchain/clang-cl-msvc.cmake
+            # export GEODE_BINDINGS_REPO_PATH=${jukeboxBindings}
+
             # export PYTHON3DLL=/home/flafy/Downloads/python3-11.8-nuget/tools/python311.dll
             # export PYTHON3INCLUDES=/home/flafy/Downloads/python3-11.8-nuget/tools/include
             fish

@@ -3,23 +3,25 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(Nong VERSION 1.0.0)
 
 file(GLOB_RECURSE SOURCES
-    libs/json
     src/*.cpp
+    src/*.hpp
 )
 
-# add_library(${PROJECT_NAME} SHARED ${SOURCES})
-
+file(GLOB SOURCES2
+    libs/zlib/*.c
+    libs/zlib/*.h
+)
 
 # Set up the mod binary
 add_library(${PROJECT_NAME} SHARED
     ${SOURCES}
-    # Add your cpp files here
+    ${SOURCES2}
 )
-
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -29,8 +31,11 @@ endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+  libs/
+)
 
-target_include_directories(${PROJECT_NAME} PRIVATE libs/json/include/)
+# target_link_libraries(${PROJECT_NAME} PRIVATE liblzma)
 
 # add_library(${PROJECT_NAME} ${GEOMETRIZE_SRC})
 
@@ -42,11 +47,15 @@ target_include_directories(${PROJECT_NAME} PRIVATE libs/json/include/)
 # find_package(Python3 COMPONENTS Embed)
 # target_link_libraries(${PROJECT_NAME} PRIVATE Python3::Embed)
 
-target_link_libraries(${PROJECT_NAME} ${SPLAT_DIR}/sdk/lib/um/x86/Gdi32.Lib)
+target_link_libraries(${PROJECT_NAME}
+${SPLAT_DIR}/sdk/lib/um/x86/Gdi32.Lib
+)
+
 # add_compile_options("-march=skylake")
 # add_compile_definitions(WIN32_LEAN_AND_MEAN=1) # geode moment
 # add_definitions(/FI"WinSock2.h")
 # target_compile_options(${PROJECT_NAME} PRIVATE "/arch:SSE")
 
 # Set up dependencies, resources, link Geode
+# setup_geode_mod(${PROJECT_NAME} EXTERNALS /home/flafy/repos/fleeym/jukebox:*)
 setup_geode_mod(${PROJECT_NAME})
