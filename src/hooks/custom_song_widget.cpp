@@ -9,8 +9,8 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
 
   std::set<int> getSongIds() {
     std::set<int> songIds;
-    for (const auto& pair : m_songs) {
-        songIds.insert(pair.first);
+    for (const auto &pair : m_songs) {
+      songIds.insert(pair.first);
     }
     songIds.insert(m_songInfoObject->m_songID);
     return songIds;

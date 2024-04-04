@@ -43,9 +43,9 @@ std::string getSubstringAfterSlash(const std::string &input) {
 }
 
 std::string decompressGz(std::vector<uint8_t> &compressedData) {
-  uint8_t* inflatedData;
+  uint8_t *inflatedData;
   ZipUtils::ccInflateMemory(compressedData.data(), compressedData.size(), &inflatedData);
-  std::string inflatedString(reinterpret_cast<char*>(inflatedData));
+  std::string inflatedString(reinterpret_cast<char *>(inflatedData));
   free(inflatedData);
   return inflatedString;
 }
