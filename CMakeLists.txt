@@ -35,27 +35,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   libs/
 )
 
-# target_link_libraries(${PROJECT_NAME} PRIVATE liblzma)
-
-# add_library(${PROJECT_NAME} ${GEOMETRIZE_SRC})
-
-# find_package(Python3 REQUIRED)
-# target_include_directories(${PROJECT_NAME} PRIVATE ${Python3_INCLUDE_DIRS})
-# target_link_libraries(${PROJECT_NAME} "${Python3_LIBRARIES}")
-
-# Uncomment the following lines if 'python3-embed' is required
-# find_package(Python3 COMPONENTS Embed)
-# target_link_libraries(${PROJECT_NAME} PRIVATE Python3::Embed)
-
-target_link_libraries(${PROJECT_NAME}
-${SPLAT_DIR}/sdk/lib/um/x86/Gdi32.Lib
-)
-
-# add_compile_options("-march=skylake")
-# add_compile_definitions(WIN32_LEAN_AND_MEAN=1) # geode moment
-# add_definitions(/FI"WinSock2.h")
-# target_compile_options(${PROJECT_NAME} PRIVATE "/arch:SSE")
-
-# Set up dependencies, resources, link Geode
-# setup_geode_mod(${PROJECT_NAME} EXTERNALS /home/flafy/repos/fleeym/jukebox:*)
 setup_geode_mod(${PROJECT_NAME})

@@ -17,21 +17,6 @@
 
 using namespace geode::prelude;
 
-// class MultiStringSettingValue : public SettingValue {
-//     std::vector<std::string> strings;
-// public:
-//     MultiStringSettingValue(std::string const& key, std::string const& modID, std::vector<std::string> strings)
-//         : SettingValue(key, modID), strings(strings) {}
-//     bool load(matjson::Value const& json) override;
-//     bool save(matjson::Value& json) const override;
-//     SettingNode* createNode(float width) override;
-//     void setStrings(std::vector<std::string> strings);
-//     std::vector<std::string> getStrings();
-//     // getters and setters for the value
-// };
-//
-
-
 struct MultiStringSettingStruct {
   std::vector<std::string> m_strings;
 };
@@ -120,23 +105,9 @@ protected:
     bool m_last;
     std::function<void (const std::string &)> m_callback;
     std::function<void ()> m_actionCallback;
-    
-    // MultiStringSettingNode* m_parentNode;
 
     bool init(std::string string, CCSize const& size, bool last, std::function<void (const std::string &)> callback, std::function<void ()> actionCallback);
-    
     void onAction(CCObject*);
-
-    // virtual void FLAlert_Clicked(FLAlertLayer*, bool btn2);
-  //
-    // void downloadFromYtDlp();
-    // void downloadFromCobalt();
-    // void setButtonsVisible();
-    // fs::path getFileDownloadPath(bool create);
-    // void setSong();
-    // void onDeleteSong(CCObject*);
-    // void onSetSong(CCObject*);
-    // void onDownload(CCObject*);
 public:
     static MultiStringSettingCell* create(std::string string, CCSize const& size, bool last, std::function<void (const std::string &)> callback, std::function<void ()> actionCallback);
 };

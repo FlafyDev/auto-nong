@@ -1,7 +1,6 @@
-
-#include "../types/serializable_vector.hpp"
 #include "an_clear_popup_blacklist.hpp"
-//
+#include "../types/serializable_vector.hpp"
+
 SettingNode* ANClearPPBlacklistSettingValue::createNode(float width) {
   return ANClearPPBlacklistSettingNode::create(this, width);
 }
@@ -11,13 +10,11 @@ bool ANClearPPBlacklistSettingNode::init(ANClearPPBlacklistSettingValue* value, 
       return false;
   this->value = value;
 
-  // float height = 35.f + 40.f * 3;
   float height = 40.f;
   this->setContentSize({ width, height });
 
 
   auto menu = CCMenu::create();
-  // menu->setPosition(width - 20.f, height - 45.f);
   menu->setPosition(0, 0);
   menu->setID("inputs-menu");
 

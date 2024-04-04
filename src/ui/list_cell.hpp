@@ -10,7 +10,6 @@ class JBListCell : public CCLayer, public FLAlertLayerProtocol {
 protected:
     float m_width;
     float m_height;
-    // CCLayer* m_layer;
 
     bool init(CCSize const& size);
     void draw() override;

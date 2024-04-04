@@ -12,8 +12,6 @@
 #include <Geode/utils/string.hpp>
 #include <Geode/loader/Mod.hpp>
 #include <matjson.hpp>
-#include "list_cell.hpp"
-#include <vector>
 
 using namespace geode::prelude;
 

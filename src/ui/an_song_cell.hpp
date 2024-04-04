@@ -2,7 +2,6 @@
 
 #include <Geode/Geode.hpp>
 #include <fleym.nongd/include/jukebox.hpp>
-#include <memory>
 
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/ui/BasedButtonSprite.hpp>
@@ -29,9 +28,6 @@
 #include "an_dropdown_layer.hpp"
 #include "list_cell.hpp"
 
-#include <sstream>
-#include "Geode/loader/Log.hpp"
-
 using namespace geode::prelude;
 
 class ANDropdownLayer;
@@ -50,8 +46,6 @@ protected:
 
     bool init(int songId, ANSong* song, ANDropdownLayer* parentPopup, CCSize const& size);
 
-    // virtual void FLAlert_Clicked(FLAlertLayer*, bool btn2);
-  //
     void downloadFromYtDlp();
     void downloadFromCobalt();
     void setButtonsVisible();

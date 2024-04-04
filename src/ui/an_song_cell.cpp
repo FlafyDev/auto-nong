@@ -7,7 +7,6 @@
 
 #include <Geode/Geode.hpp>
 #include <fleym.nongd/include/jukebox.hpp>
-#include <memory>
 
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/ui/BasedButtonSprite.hpp>
@@ -34,11 +33,7 @@
 #include "list_cell.hpp"
 #include "../utils/utils.hpp"
 
-#include <sstream>
 #include "Geode/loader/Log.hpp"
-
-// #include <nlohmann/json.hpp>
-// using json = nlohmann::json;
 
 using namespace geode::prelude;
 
@@ -114,11 +109,7 @@ bool ANSongCell::init(int songId, ANSong* song, ANDropdownLayer* parentPopup, CC
     m_songNameLabel = CCLabelBMFont::create(m_anSong->name.c_str(), "bigFont.fnt");
     m_songNameLabel->limitLabelWidth(220.f, 0.7f, 0.1f);
     m_songNameLabel->setID("song-name");
-    //
-    // // if (selected) {
-    // //     m_songNameLabel->setColor(ccc3(188, 254, 206));
-    // // }
-    //
+
     m_artistNameLabel = CCLabelBMFont::create(m_anSong->artist.c_str(), "goldFont.fnt");
     m_artistNameLabel->limitLabelWidth(120.f, 0.7f, 0.1f);
     m_artistNameLabel->setID("artist-name");
@@ -126,7 +117,7 @@ bool ANSongCell::init(int songId, ANSong* song, ANDropdownLayer* parentPopup, CC
     m_sourceLabel = CCLabelBMFont::create(std::format("{} : {}", getSubstringAfterSlash(m_anSong->index), m_anSong->getSource()).c_str(), "goldFont.fnt");
     m_sourceLabel->limitLabelWidth(120.f, 0.7f, 0.1f);
     m_sourceLabel->setID("artist-name");
-    //
+
     m_songInfoLayer->addChild(m_sourceLabel);
     m_songInfoLayer->addChild(m_artistNameLabel);
     m_songInfoLayer->addChild(m_songNameLabel);
@@ -143,40 +134,6 @@ bool ANSongCell::init(int songId, ANSong* song, ANDropdownLayer* parentPopup, CC
     this->addChild(m_songInfoLayer);
     return true;
 }
-
-// void NongCell::onFixDefault(CCObject* target) {
-//     if (!m_isActive) {
-//         FLAlertLayer::create("Error", "Set the default song as <cr>active</c> first", "Ok")->show();
-//         return;
-//     }
-//     createQuickPopup(
-//         "Fix default",
-//         "Do you want to refetch song info <cb>for the default song</c>? Use this <cr>ONLY</c> if it gets renamed by accident!",
-//         "No",
-//         "Yes",
-//         [this](FLAlertLayer* alert, bool btn2) {
-//             if (btn2) {
-//                 NongManager::get()->markAsInvalidDefault(m_parentPopup->getSongID());
-//
-//                 m_parentPopup->updateParentWidget(m_songInfo);
-//                 // TODO I swear to god I'll regret this some day
-//                 this->retain();
-//                 m_parentPopup->retain();
-//                 m_parentPopup->m_mainLayer->retain();
-//                 this->template addEventListener<GetSongInfoEventFilter>(
-//                     [this](auto song) {
-//                         m_parentPopup->refreshList();
-//                         FLAlertLayer::create("Success", "Default song data was refetched successfully!", "Ok")->show();
-//                         this->release();
-//                         m_parentPopup->release();
-//                         m_parentPopup->m_mainLayer->release();
-//                         return ListenerResult::Propagate;
-//                     }, m_parentPopup->getSongID()
-//                 );
-//             }
-//         }
-//     );
-// }
 
 void ANSongCell::onSetSong(CCObject* target) {
   setSong();
@@ -245,7 +202,6 @@ void ANSongCell::downloadFromYtDlp() {
   const std::string videoId = ytSong->yt_id;
   const fs::path downloadPath = getFileDownloadPath(true);
 
-  // Check if youtube-dl.exe exists at the specified path
   if (!fs::exists(ytDlpPath)) {
     log::info("yt-dlp.exe not found at specified path: {}", ytDlpPath);
     Notification::create("yt-dlp.exe not found at specified path", NotificationIcon::Error)->show();
@@ -260,29 +216,13 @@ void ANSongCell::downloadFromYtDlp() {
   notif->setTime(NOTIFICATION_DEFAULT_TIME);
   notif->show();
 
-  // void executeCommand() {
-  // }
-  //   auto print_message = ;
-
   std::thread commandThread([this, ytSong, ytDlpCommand]() { 
     std::string command = ytDlpCommand;
-
-    // if (ytSong->yt_offset.has_value()) {
-    //   int offset = ytSong->yt_offset.value();
-    //   if (offset < 0) { // advance forward
-    //     command += std::format(" --ppa \"ffmpeg:-ss {:0.3f}\"", static_cast<double>(std::abs(offset)));
-    //   } else if (offset > 0) { // delay
-    //     command += std::format(" --ppa \"ffmpeg:-af adelay={}|{}\"", offset, offset);
-    //   }
-    // }
 
     int result = std::system(std::format("\"{}\"", command).c_str());
 
     log::info("command({}): {}", result, command);
 
-    // Loader::get()->queueInMainThread([&notif](){
-    //     notif->hide();
-    // });
     m_currentlyDownloading = false;
 
     if (result != 0) {
@@ -310,16 +250,12 @@ void ANSongCell::downloadFromCobalt() {
     const ANYTSong* ytSong = static_cast<ANYTSong*>(m_anSong);
     const std::string videoId = ytSong->yt_id;
 
-    // Define the parameters for the request
     std::unordered_map<std::string, std::string> parameters = {
         {"url", std::format("https://www.youtube.com/watch?v={}", videoId)},
         {"aFormat", "mp3"},
         {"isAudioOnly", "true"}
     };
 
-    // nlohmann::json parameters_json(parameters);
-    // std::string parameters_str = parameters_json.dump();
-    // std::string_view body(parameters_str);
     matjson::Value parameters_json = matjson::Object();
     for (auto const& [key, value] : parameters) {
       parameters_json[key] = value;
@@ -432,10 +368,6 @@ void ANSongCell::onDownload(CCObject* target) {
   }
 }
 
-// void NongCell::deleteSong(CCObject* target) {
-//     FLAlertLayer::create(this, "Are you sure?", "Are you sure you want to delete <cy>" + this->m_songInfo.songName + "</c> from your NONGs?", "No", "Yes")->show();
-// }
-
 ANSongCell* ANSongCell::create(int songId, ANSong* song, ANDropdownLayer* parentPopup, CCSize const& size) {
     auto ret = new ANSongCell();
     if (ret && ret->init(songId, song, parentPopup, size)) {
@@ -444,9 +376,3 @@ ANSongCell* ANSongCell::create(int songId, ANSong* song, ANDropdownLayer* parent
     CC_SAFE_DELETE(ret);
     return nullptr;
 }
-
-// void NongCell::FLAlert_Clicked(FLAlertLayer* layer, bool btn2) {
-//     if (btn2) {
-//         m_parentPopup->deleteSong(m_songInfo);
-//     }
-// }
