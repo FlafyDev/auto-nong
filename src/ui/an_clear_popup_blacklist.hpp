@@ -1,3 +1,5 @@
+#pragma once 
+
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
 #include <Geode/binding/CCTextInputNode.hpp>
 #include <Geode/binding/Slider.hpp>
@@ -41,9 +43,7 @@ public:
 template<>
 struct SettingValueSetter<ANClearPPBlacklistSettingStruct> {
     static ANClearPPBlacklistSettingStruct get(SettingValue* setting) {
-        auto posSetting = static_cast<ANClearPPBlacklistSettingValue*>(setting);
-        struct ANClearPPBlacklistSettingStruct defaultStruct = { 0 };
-        return defaultStruct;
+        return ANClearPPBlacklistSettingStruct { 0 };
     };
     static void set(ANClearPPBlacklistSettingValue* setting, ANClearPPBlacklistSettingStruct const& value) { };
 };

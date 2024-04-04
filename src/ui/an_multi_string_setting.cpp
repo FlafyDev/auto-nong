@@ -167,17 +167,12 @@ MultiStringSettingCell* MultiStringSettingCell::create(std::string string, CCSiz
     return nullptr;
 }
 
-std::vector<std::string> MultiStringSettingValue::defaultIndexes = {
-  "https://cdn.jsdelivr.net/gh/FlafyDev/auto-nong-indexes@dist/official.json.gz",
-  "https://cdn.jsdelivr.net/gh/FlafyDev/auto-nong-indexes@dist/sfh-rooot.json.gz"
-};
-
   bool MultiStringSettingNode::init(MultiStringSettingValue* value, float width) {
     if (!SettingNode::init(value))
         return false;
-    this->value = value;
+    this->m_value = value;
     for (std::string& str : value->getStrings()) {
-        localValue.push_back(str);
+        m_localValue.push_back(str);
     }
 
     float height = 40.f;
@@ -188,7 +183,12 @@ std::vector<std::string> MultiStringSettingValue::defaultIndexes = {
     menu->setPosition(0, 0);
     menu->setID("inputs-menu");
 
-    m_label = CCLabelBMFont::create("Indexes", "bigFont.fnt");
+     // No way to get the JSON without hardcoding the setting ID...
+    auto settingJson = Mod::get()->getSettingDefinition("indexes")->get<CustomSetting>()->json;
+    m_name = settingJson->get<std::string>("name");
+    m_description = settingJson->get<std::string>("description");
+
+    m_label = CCLabelBMFont::create(m_name.c_str(), "bigFont.fnt");
     m_label->setAnchorPoint({0.f, 0.5f});
     m_label->setPosition(20.f, height/2);
     m_label->setScale(0.5f);
@@ -227,8 +227,8 @@ std::vector<std::string> MultiStringSettingValue::defaultIndexes = {
   }
 
   void MultiStringSettingNode::onView(CCObject*) {
-    auto popup = MultiStringSettingPopup::create(localValue, [this](std::vector<std::string> newStrings) {
-      localValue = newStrings;
+    auto popup = MultiStringSettingPopup::create(m_localValue, [this](std::vector<std::string> newStrings) {
+      m_localValue = newStrings;
       updateVisuals();
     });
     popup->m_noElasticity = true;
@@ -241,8 +241,8 @@ std::vector<std::string> MultiStringSettingValue::defaultIndexes = {
 
   void MultiStringSettingNode::onDesc(CCObject*) {
     FLAlertLayer::create(
-      m_label->getString(),
-      "AutoNong indexes.\nFrom indexes the mod knows where to fetch the songs from.",
+      m_name.c_str(),
+      m_description.c_str(),
       "OK"
     )->show();
   }
@@ -254,33 +254,34 @@ std::vector<std::string> MultiStringSettingValue::defaultIndexes = {
   }
 
   void MultiStringSettingNode::commit() {
-      this->value->setStrings(localValue);
+      this->m_value->setStrings(m_localValue);
       updateVisuals();
       this->dispatchCommitted();
   }
 
   bool MultiStringSettingNode::hasUncommittedChanges() {
-    if (localValue.size() != value->getStrings().size()) return true;
-    for (int i = 0; i < localValue.size(); i++) {
-      if (localValue[i] != value->getStrings()[i]) return true;
+    if (m_localValue.size() != m_value->getStrings().size()) return true;
+    for (int i = 0; i < m_localValue.size(); i++) {
+      if (m_localValue[i] != m_value->getStrings()[i]) return true;
     }
     return false;
   }
 
   bool MultiStringSettingNode::hasNonDefaultValue() {
-    if (localValue.size() != MultiStringSettingValue::defaultIndexes.size()) return true;
-    for (int i = 0; i < localValue.size(); i++) {
-      if (localValue[i] != MultiStringSettingValue::defaultIndexes[i]) return true;
-    }
+    // TODO:
+    // if (m_localValue.size() != MultiStringSettingValue::defaultIndexes.size()) return true;
+    // for (int i = 0; i < m_localValue.size(); i++) {
+    //   if (m_localValue[i] != MultiStringSettingValue::defaultIndexes[i]) return true;
+    // }
     return false;
   }
 
-  // Geode calls this to reset the setting's value back to default
   void MultiStringSettingNode::resetToDefault() {
-    localValue.clear();
-    for (std::string& str : MultiStringSettingValue::defaultIndexes) {
-      localValue.push_back(str);
-    }
+    // TODO
+    // m_localValue.clear();
+    // for (std::string& str : MultiStringSettingValue::defaultIndexes) {
+    //   m_localValue.push_back(str);
+    // }
     updateVisuals();
   }
 

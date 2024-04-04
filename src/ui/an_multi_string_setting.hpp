@@ -1,3 +1,5 @@
+#pragma once 
+
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
 #include <Geode/binding/CCTextInputNode.hpp>
 #include <Geode/binding/Slider.hpp>
@@ -25,11 +27,8 @@ class MultiStringSettingValue;
 
 class MultiStringSettingValue : public SettingValue {
 protected:
-
     std::vector<std::string> m_strings;
 public:
-    static std::vector<std::string> defaultIndexes;
-
     MultiStringSettingValue(std::string const& key, std::string const& modID, std::vector<std::string> strings)
       : SettingValue(key, modID), m_strings(strings) {}
 
@@ -66,32 +65,29 @@ public:
 template<>
 struct SettingValueSetter<MultiStringSettingStruct> {
     static MultiStringSettingStruct get(SettingValue* setting) {
-        auto posSetting = static_cast<MultiStringSettingValue*>(setting);
-        struct MultiStringSettingStruct defaultStruct = { posSetting->getStrings() };
-        return defaultStruct;
+      return MultiStringSettingStruct { static_cast<MultiStringSettingValue*>(setting)->getStrings() };
     };
     static void set(MultiStringSettingValue* setting, MultiStringSettingStruct const& value) {
-        setting->setStrings(value.m_strings);
+      setting->setStrings(value.m_strings);
     };
-    // static MultiStringSettingStruct get(MultiStringSettingValue* setting) {
-    //     return MultiStringSettingStruct{setting->getStrings()};
-    // };
 };
 
 
 class MultiStringSettingNode : public SettingNode {
 protected:
-    bool init(MultiStringSettingValue* value, float width);
-    MultiStringSettingValue* value;
+    MultiStringSettingValue* m_value;
     CCMenuItemSpriteExtra* m_resetBtn;
     CCLabelBMFont* m_label;
-    std::vector<std::string> localValue;
+    std::vector<std::string> m_localValue;
+    std::string m_name;
+    std::string m_description;
+
+    bool init(MultiStringSettingValue* value, float width);
 public:
     void updateVisuals();
     void onView(CCObject*);
     void onReset(CCObject*);
     void onDesc(CCObject*);
-    // void onBtnString(CCObject*);
     void commit() override;
     bool hasUncommittedChanges() override;
     bool hasNonDefaultValue() override;
@@ -107,7 +103,7 @@ protected:
     std::function<void ()> m_actionCallback;
 
     bool init(std::string string, CCSize const& size, bool last, std::function<void (const std::string &)> callback, std::function<void ()> actionCallback);
-    void onAction(CCObject*);
 public:
+    void onAction(CCObject*);
     static MultiStringSettingCell* create(std::string string, CCSize const& size, bool last, std::function<void (const std::string &)> callback, std::function<void ()> actionCallback);
 };

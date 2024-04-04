@@ -106,15 +106,15 @@ bool ANSongCell::init(int songId, ANSong* song, ANDropdownLayer* parentPopup, CC
     setButtonsVisible();
 
     m_songInfoLayer = CCLayer::create();
-    m_songNameLabel = CCLabelBMFont::create(m_anSong->name.c_str(), "bigFont.fnt");
+    m_songNameLabel = CCLabelBMFont::create(m_anSong->m_name.c_str(), "bigFont.fnt");
     m_songNameLabel->limitLabelWidth(220.f, 0.7f, 0.1f);
     m_songNameLabel->setID("song-name");
 
-    m_artistNameLabel = CCLabelBMFont::create(m_anSong->artist.c_str(), "goldFont.fnt");
+    m_artistNameLabel = CCLabelBMFont::create(m_anSong->m_artist.c_str(), "goldFont.fnt");
     m_artistNameLabel->limitLabelWidth(120.f, 0.7f, 0.1f);
     m_artistNameLabel->setID("artist-name");
 
-    m_sourceLabel = CCLabelBMFont::create(std::format("{} : {}", getSubstringAfterSlash(m_anSong->index), m_anSong->getSource()).c_str(), "goldFont.fnt");
+    m_sourceLabel = CCLabelBMFont::create(std::format("{} : {}", getSubstringAfterSlash(m_anSong->m_index), m_anSong->getSource()).c_str(), "goldFont.fnt");
     m_sourceLabel->limitLabelWidth(120.f, 0.7f, 0.1f);
     m_sourceLabel->setID("artist-name");
 
@@ -165,21 +165,21 @@ void ANSongCell::setSong() {
 
   SongInfo song = {
       .path = downloadPath,
-      .songName = m_anSong->name,
-      .authorName = m_anSong->artist,
+      .songName = m_anSong->m_name,
+      .authorName = m_anSong->m_artist,
       .songUrl = "local",
   };
   jukebox::addNong(song, m_songId);
   jukebox::setActiveSong(song, m_songId);
-  customSongWidget->m_songInfoObject->m_artistName = m_anSong->artist;
-  customSongWidget->m_songInfoObject->m_songName = m_anSong->name;
+  customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
+  customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
   customSongWidget->updateSongObject(customSongWidget->m_songInfoObject);
 }
 
 fs::path ANSongCell::getFileDownloadPath(bool create) {
   if (typeid(*m_anSong) == typeid(ANYTSong)) {
     const ANYTSong* ytSong = static_cast<ANYTSong*>(m_anSong);
-    const std::string videoId = ytSong->yt_id;
+    const std::string videoId = ytSong->m_ytId;
     if (create) {
       fs::create_directory(std::format("{}\\youtube", Mod::get()->getSaveDir().string()));
     }
@@ -190,7 +190,7 @@ fs::path ANSongCell::getFileDownloadPath(bool create) {
     if (create) {
       fs::create_directory(std::format("{}\\host", Mod::get()->getSaveDir().string()));
     }
-    return std::format("{}\\host\\{}.mp3", Mod::get()->getSaveDir().string(), urlToFilename(hostSong->url));
+    return std::format("{}\\host\\{}.mp3", Mod::get()->getSaveDir().string(), urlToFilename(hostSong->m_url));
   }
   return "";
 }
@@ -199,7 +199,7 @@ void ANSongCell::downloadFromYtDlp() {
   m_currentlyDownloading = true;
   const ANYTSong* ytSong = static_cast<ANYTSong*>(m_anSong);
   const fs::path ytDlpPath = Mod::get()->getSettingValue<std::string>("yt-dlp-path");
-  const std::string videoId = ytSong->yt_id;
+  const std::string videoId = ytSong->m_ytId;
   const fs::path downloadPath = getFileDownloadPath(true);
 
   if (!fs::exists(ytDlpPath)) {
@@ -248,7 +248,7 @@ void ANSongCell::downloadFromCobalt() {
     m_currentlyDownloading = true;
     const std::string apiUrl = "https://co.wuk.sh/api/json";
     const ANYTSong* ytSong = static_cast<ANYTSong*>(m_anSong);
-    const std::string videoId = ytSong->yt_id;
+    const std::string videoId = ytSong->m_ytId;
 
     std::unordered_map<std::string, std::string> parameters = {
         {"url", std::format("https://www.youtube.com/watch?v={}", videoId)},
@@ -288,7 +288,7 @@ void ANSongCell::downloadFromCobalt() {
                     file.write(reinterpret_cast<const char*>(audio_data.data()), audio_data.size());
                     file.close();
 
-                    std::cout << "Downloaded the song successfully!" << std::endl;
+                    log::info("Downloaded the song successfully!");
 
                     Loader::get()->queueInMainThread([this](){
                       Notification::create("Downloaded", NotificationIcon::Success)->show();
@@ -299,7 +299,7 @@ void ANSongCell::downloadFromCobalt() {
                     m_currentlyDownloading = false;
                   });
             } else {
-              std::cout << "Failed to download the song: " << r << std::endl;
+              log::warn("Failed to download the song: {}", r);
               m_currentlyDownloading = false;
             }
         }).expect([this](auto _) {
@@ -348,14 +348,14 @@ void ANSongCell::onDownload(CCObject* target) {
     m_currentlyDownloading = true;
     Notification::create("Downloading from URL", NotificationIcon::Loading)->show();
     geode::utils::web::AsyncWebRequest()
-        .get(hostSong->url)
+        .get(hostSong->m_url)
         .bytes()
         .then([this, downloadPath](const geode::ByteVector& audio_data) {
           std::ofstream file(downloadPath, std::ios::out | std::ios::binary);
           file.write(reinterpret_cast<const char*>(audio_data.data()), audio_data.size());
           file.close();
 
-          std::cout << "Downloaded the song successfully!" << std::endl;
+          log::info("Downloaded the song successfully!");
 
           Loader::get()->queueInMainThread([this](){
             Notification::create("Downloaded", NotificationIcon::Success)->show();

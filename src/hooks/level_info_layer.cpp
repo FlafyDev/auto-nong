@@ -1,11 +1,9 @@
-#include "managers/auto_nong_manager.hpp"
 #include <Geode/Geode.hpp>
 #include <fleym.nongd/include/jukebox.hpp>
 #include <matjson.hpp>
 
 using namespace geode::prelude;
 
-#include "types/serializable_vector.hpp"
 #include <Geode/Loader.hpp>
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
 #include <Geode/binding/CustomSongWidget.hpp>
@@ -30,22 +28,15 @@ using namespace geode::prelude;
 #include <Geode/ui/Popup.hpp>
 #include <Geode/utils/cocos.hpp>
 
-#include "Geode/loader/Log.hpp"
-#include "ui/an_clear_popup_blacklist.hpp"
-#include "ui/an_multi_string_setting.hpp"
+#include "../managers/auto_nong_manager.hpp"
 
+struct ANLevelInfoLayer : geode::Modify<ANLevelInfoLayer, LevelInfoLayer> {
+  bool init(GJGameLevel *level, bool p1) {
+    if (!LevelInfoLayer::init(level, p1)) {
+      return false;
+    }
+    AutoNongManager::get()->setCurrentLevelID(level->m_levelID);
+    return true;
+  }
+};
 
-$on_mod(Loaded) {
-  Mod::get()->addCustomSetting<MultiStringSettingValue>("indexes",
-                                                        Mod::get()->getSettingDefinition("indexes")->get<CustomSetting>()->json->get<std::vector<std::string>>("default")
-                                                        );
-  Mod::get()->addCustomSetting<ANClearPPBlacklistSettingValue>("_blacklistPPClear", 0);
-
-  AutoNongManager::get()->loadIndexes();
-  // Reload the indexes every hour
-  AutoNongManager::get()->schedule(schedule_selector(AutoNongManager::loadIndexesSchedule), 60 * 60, kCCRepeatForever, 0);
-  // Reload the indexes on change
-  listenForSettingChanges("indexes", +[](MultiStringSettingStruct value) {
-    AutoNongManager::get()->loadIndexes();
-  });
-}

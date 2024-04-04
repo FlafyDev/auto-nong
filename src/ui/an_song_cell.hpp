@@ -45,7 +45,7 @@ protected:
     bool m_currentlyDownloading = false;
 
     bool init(int songId, ANSong* song, ANDropdownLayer* parentPopup, CCSize const& size);
-
+public:
     void downloadFromYtDlp();
     void downloadFromCobalt();
     void setButtonsVisible();
@@ -54,7 +54,6 @@ protected:
     void onDeleteSong(CCObject*);
     void onSetSong(CCObject*);
     void onDownload(CCObject*);
-public:
     static ANSongCell* create(int songId, ANSong* song, ANDropdownLayer* parentPopup, CCSize const& size);
 };
 
