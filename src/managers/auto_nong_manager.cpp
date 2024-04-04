@@ -29,7 +29,8 @@ void AutoNongManager::loadIndexes() {
       continue;
     geode::utils::web::AsyncWebRequest().fetch(index).bytes().then(
         [this, index](const geode::ByteVector &r) {
-          std::string jsonString = decompressGz(static_cast<std::vector<uint8_t>>(r));
+          std::vector<uint8_t> rVec = r;
+          std::string jsonString = decompressGz(rVec);
 
           matjson::Value jsonObj = matjson::parse(jsonString);
 

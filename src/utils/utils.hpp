@@ -9,4 +9,4 @@ std::string urlToFilename(const std::string &url);
 
 std::string getSubstringAfterSlash(const std::string &input);
 
-std::string decompressGz(const std::vector<uint8_t> &compressed_data);
+std::string decompressGz(std::vector<uint8_t> &compressedData);

@@ -12,16 +12,7 @@ file(GLOB_RECURSE SOURCES
     src/*.hpp
 )
 
-file(GLOB SOURCES2
-    libs/zlib/*.c
-    libs/zlib/*.h
-)
-
-# Set up the mod binary
-add_library(${PROJECT_NAME} SHARED
-    ${SOURCES}
-    ${SOURCES2}
-)
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -30,9 +21,5 @@ else()
 endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-  libs/
-)
 
 setup_geode_mod(${PROJECT_NAME})
