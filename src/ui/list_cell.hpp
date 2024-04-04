@@ -8,9 +8,9 @@ using namespace geode::prelude;
 
 class JBListCell : public CCLayer, public FLAlertLayerProtocol {
 protected:
-    float m_width;
-    float m_height;
+  float m_width;
+  float m_height;
 
-    bool init(CCSize const& size);
-    void draw() override;
+  bool init(CCSize const &size);
+  void draw() override;
 };
