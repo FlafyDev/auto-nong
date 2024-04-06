@@ -1,7 +1,7 @@
 #include "multi_string_setting.hpp"
+#include "../types/serializable_vector.hpp"
 #include <algorithm>
 #include <vector>
-#include "../types/serializable_vector.hpp"
 
 using namespace geode::prelude;
 
@@ -32,8 +32,8 @@ protected:
     return true;
   }
 
-  void onActionButton(CCObject* target) {
-    auto id = static_cast<CCNode*>(target)->getID();
+  void onActionButton(CCObject *target) {
+    auto id = static_cast<CCNode *>(target)->getID();
     auto index = std::stoi(id.substr(4));
     if (index == m_localValue.size() - 1) {
       m_localValue.push_back("");
@@ -43,7 +43,6 @@ protected:
     m_newStringsCallback(m_localValue);
     createList();
   }
-
 
   void createList() {
     std::optional<float> previousListPosition = {};
@@ -69,36 +68,36 @@ protected:
     auto size = this->m_mainLayer->getContentSize();
 
     for (int i = 0; i < m_localValue.size(); i++) {
-        auto last = i == m_localValue.size() - 1;
-        auto size2 = CCSize {size.width - 10.f, 40.f};
+      auto last = i == m_localValue.size() - 1;
+      auto size2 = CCSize{size.width - 10.f, 40.f};
 
-        auto menu = CCMenu::create();
-        menu->setPosition(0, 0);
-        // menu->setContentSize(size2);
+      auto menu = CCMenu::create();
+      menu->setPosition(0, 0);
+      // menu->setContentSize(size2);
 
+      auto inputNode = TextInput::create(103.f, "Index url", "chatFont.fnt");
+      inputNode->setScale(1.f);
+      inputNode->setPosition(size2.width / 2 - 15.f, size2.height / 2);
+      inputNode->setFilter(
+          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$&'()*+,;=");
+      inputNode->setMaxCharCount(300);
+      inputNode->setWidth(size2.width - 60.f);
+      inputNode->setString(m_localValue[i], false);
+      inputNode->setCallback([this, i](std::string const &str) {
+        m_localValue[i] = str;
+        m_newStringsCallback(m_localValue);
+      });
+      menu->addChild(inputNode);
 
-        auto inputNode = TextInput::create(103.f, "Index url", "chatFont.fnt");
-        inputNode->setScale(1.f);
-        inputNode->setPosition(size2.width / 2 - 15.f, size2.height / 2);
-        inputNode->setFilter(
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$&'()*+,;=");
-        inputNode->setMaxCharCount(300);
-        inputNode->setWidth(size2.width - 60.f);
-        inputNode->setString(m_localValue[i], false);
-        inputNode->setCallback([this, i](std::string const &str) {
-          m_localValue[i] = str;
-          m_newStringsCallback(m_localValue);
-        });
-        menu->addChild(inputNode);
-
-        auto spr = last ? CCSprite::create("addIcon.png"_spr)
-                          : CCSprite::createWithSpriteFrameName("GJ_deleteIcon_001.png");
-        spr->setScale(0.75f);
-        auto btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MultiStringSettingPopup::onActionButton));
-        btn->setID(fmt::format("btn-{}", i));
-        btn->setPosition(size2.width - 15.f, size2.height / 2);
-        menu->addChild(btn);
-        cells->addObject(menu);
+      auto spr = last ? CCSprite::create("addIcon.png"_spr)
+                      : CCSprite::createWithSpriteFrameName("GJ_deleteIcon_001.png");
+      spr->setScale(0.75f);
+      auto btn = CCMenuItemSpriteExtra::create(
+          spr, this, menu_selector(MultiStringSettingPopup::onActionButton));
+      btn->setID(fmt::format("btn-{}", i));
+      btn->setPosition(size2.width - 15.f, size2.height / 2);
+      menu->addChild(btn);
+      cells->addObject(menu);
     }
 
     auto list = ListView::create(cells, 40.f, size.width - 8.f, size.height - 16.f);
@@ -138,7 +137,6 @@ public:
     return nullptr;
   }
 };
-
 
 bool MultiStringSettingNode::init(MultiStringSettingValue *value, float width) {
   if (!SettingNode::init(value))
@@ -235,16 +233,18 @@ bool MultiStringSettingNode::hasUncommittedChanges() {
 }
 
 bool MultiStringSettingNode::hasNonDefaultValue() {
-  if (m_localValue.size() != m_defaultValue.size()) return true;
+  if (m_localValue.size() != m_defaultValue.size())
+    return true;
   for (int i = 0; i < m_localValue.size(); i++) {
-    if (m_localValue[i] != m_defaultValue[i]) return true;
+    if (m_localValue[i] != m_defaultValue[i])
+      return true;
   }
   return false;
 }
 
 void MultiStringSettingNode::resetToDefault() {
   m_localValue.clear();
-  for (std::string& str : m_defaultValue) {
+  for (std::string &str : m_defaultValue) {
     m_localValue.push_back(str);
   }
   updateVisuals();
