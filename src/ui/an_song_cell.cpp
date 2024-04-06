@@ -100,7 +100,7 @@ void ANSongCell::setButtonsVisible() {
 void ANSongCell::onDeleteSong(CCObject *target) {
   const fs::path downloadPath = getFileDownloadPath(false);
   if (!fs::exists(downloadPath)) {
-    Notification::create("File doesn't exists", NotificationIcon::Error)->show();
+    Notification::create("File doesn't exist", NotificationIcon::Error)->show();
     return;
   }
   fs::remove(downloadPath);
@@ -113,7 +113,7 @@ void ANSongCell::setSong() {
   const Ref<CustomSongWidget> customSongWidget = m_parentPopup->m_parentWidget;
 
   if (!fs::exists(downloadPath)) {
-    Notification::create("File doesn't exists", NotificationIcon::Error)->show();
+    Notification::create("File doesn't exist", NotificationIcon::Error)->show();
     return;
   }
 
