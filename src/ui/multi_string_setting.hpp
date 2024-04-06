@@ -65,6 +65,7 @@ protected:
   std::vector<std::string> m_localValue;
   std::string m_name;
   std::string m_description;
+  std::vector<std::string> m_defaultValue;
 
   bool init(MultiStringSettingValue *value, float width);
 

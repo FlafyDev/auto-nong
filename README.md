@@ -13,6 +13,7 @@ You can edit which indexes the mod downloads on startup in the mod's settings on
 These are the indexes that come with the mod by default:
 - https://cdn.jsdelivr.net/gh/FlafyDev/auto-nong-indexes@dist/official.json.gz
 - https://cdn.jsdelivr.net/gh/FlafyDev/auto-nong-indexes@dist/sfh-rooot.json.gz
+- https://cdn.jsdelivr.net/gh/FlafyDev/auto-nong-indexes@dist/sfh-yt.json.gz
 
 These are generated from [FlafyDev/auto-nong-indexes](https://github.com/FlafyDev/auto-nong-indexes).
 

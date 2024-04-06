@@ -1,6 +1,7 @@
 #include "multi_string_setting.hpp"
 #include <algorithm>
 #include <vector>
+#include "../types/serializable_vector.hpp"
 
 using namespace geode::prelude;
 
@@ -156,6 +157,7 @@ bool MultiStringSettingNode::init(MultiStringSettingValue *value, float width) {
 
   // No way to get the JSON without hardcoding the setting ID...
   auto settingJson = Mod::get()->getSettingDefinition("indexes")->get<CustomSetting>()->json;
+  m_defaultValue = settingJson->get<std::vector<std::string>>("default");
   m_name = settingJson->get<std::string>("name");
   m_description = settingJson->get<std::string>("description");
 
@@ -233,20 +235,18 @@ bool MultiStringSettingNode::hasUncommittedChanges() {
 }
 
 bool MultiStringSettingNode::hasNonDefaultValue() {
-  // TODO:
-  // if (m_localValue.size() != MultiStringSettingValue::defaultIndexes.size()) return true;
-  // for (int i = 0; i < m_localValue.size(); i++) {
-  //   if (m_localValue[i] != MultiStringSettingValue::defaultIndexes[i]) return true;
-  // }
+  if (m_localValue.size() != m_defaultValue.size()) return true;
+  for (int i = 0; i < m_localValue.size(); i++) {
+    if (m_localValue[i] != m_defaultValue[i]) return true;
+  }
   return false;
 }
 
 void MultiStringSettingNode::resetToDefault() {
-  // TODO
-  // m_localValue.clear();
-  // for (std::string& str : MultiStringSettingValue::defaultIndexes) {
-  //   m_localValue.push_back(str);
-  // }
+  m_localValue.clear();
+  for (std::string& str : m_defaultValue) {
+    m_localValue.push_back(str);
+  }
   updateVisuals();
 }
 
