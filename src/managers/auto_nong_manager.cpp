@@ -27,6 +27,7 @@ void AutoNongManager::loadIndexes() {
   for (std::string index : indexes) {
     if (index.size() < 5)
       continue;
+    log::info("Loading index: {}", index);
     geode::utils::web::AsyncWebRequest().fetch(index).bytes().then(
         [this, index](const geode::ByteVector &r) {
           std::vector<uint8_t> rVec = r;
@@ -57,7 +58,10 @@ void AutoNongManager::loadIndexes() {
               }
             }
           }
-        });
+          Loader::get()->queueInMainThread([this, index]() {
+            log::info("Loaded index: {}", index);
+          });
+        }).send();
   }
 }
 

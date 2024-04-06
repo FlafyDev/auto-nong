@@ -79,21 +79,3 @@ public:
   void resetToDefault() override;
   static MultiStringSettingNode *create(MultiStringSettingValue *value, float width);
 };
-
-class MultiStringSettingCell : public JBListCell {
-protected:
-  std::string m_string;
-  bool m_last;
-  std::function<void(const std::string &)> m_callback;
-  std::function<void()> m_actionCallback;
-
-  bool init(std::string string, CCSize const &size, bool last,
-            std::function<void(const std::string &)> callback,
-            std::function<void()> actionCallback);
-
-public:
-  void onAction(CCObject *);
-  static MultiStringSettingCell *create(std::string string, CCSize const &size, bool last,
-                                        std::function<void(const std::string &)> callback,
-                                        std::function<void()> actionCallback);
-};

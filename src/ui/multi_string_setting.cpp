@@ -31,6 +31,19 @@ protected:
     return true;
   }
 
+  void onActionButton(CCObject* target) {
+    auto id = static_cast<CCNode*>(target)->getID();
+    auto index = std::stoi(id.substr(4));
+    if (index == m_localValue.size() - 1) {
+      m_localValue.push_back("");
+    } else {
+      m_localValue.erase(m_localValue.begin() + index);
+    }
+    m_newStringsCallback(m_localValue);
+    createList();
+  }
+
+
   void createList() {
     std::optional<float> previousListPosition = {};
     if (m_list != nullptr) {
@@ -55,22 +68,36 @@ protected:
     auto size = this->m_mainLayer->getContentSize();
 
     for (int i = 0; i < m_localValue.size(); i++) {
-      cells->addObject(MultiStringSettingCell::create(
-          m_localValue[i], {size.width - 10.f, 40.f}, i == m_localValue.size() - 1,
-          [this, i](const std::string &str) {
-            m_localValue[i] = str;
-            m_newStringsCallback(m_localValue);
-          },
-          [this, i]() {
-            if (i == m_localValue.size() - 1) {
-              m_localValue.push_back("");
-              m_newStringsCallback(m_localValue);
-            } else {
-              m_localValue.erase(m_localValue.begin() + i);
-              m_newStringsCallback(m_localValue);
-            }
-            createList();
-          }));
+        auto last = i == m_localValue.size() - 1;
+        auto size2 = CCSize {size.width - 10.f, 40.f};
+
+        auto menu = CCMenu::create();
+        menu->setPosition(0, 0);
+        // menu->setContentSize(size2);
+
+
+        auto inputNode = TextInput::create(103.f, "Index url", "chatFont.fnt");
+        inputNode->setScale(1.f);
+        inputNode->setPosition(size2.width / 2 - 15.f, size2.height / 2);
+        inputNode->setFilter(
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$&'()*+,;=");
+        inputNode->setMaxCharCount(300);
+        inputNode->setWidth(size2.width - 60.f);
+        inputNode->setString(m_localValue[i], false);
+        inputNode->setCallback([this, i](std::string const &str) {
+          m_localValue[i] = str;
+          m_newStringsCallback(m_localValue);
+        });
+        menu->addChild(inputNode);
+
+        auto spr = last ? CCSprite::create("addIcon.png"_spr)
+                          : CCSprite::createWithSpriteFrameName("GJ_deleteIcon_001.png");
+        spr->setScale(0.75f);
+        auto btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(MultiStringSettingPopup::onActionButton));
+        btn->setID(fmt::format("btn-{}", i));
+        btn->setPosition(size2.width - 15.f, size2.height / 2);
+        menu->addChild(btn);
+        cells->addObject(menu);
     }
 
     auto list = ListView::create(cells, 40.f, size.width - 8.f, size.height - 16.f);
@@ -111,57 +138,6 @@ public:
   }
 };
 
-bool MultiStringSettingCell::init(std::string string, CCSize const &size, bool last,
-                                  std::function<void(const std::string &)> callback,
-                                  std::function<void()> actionCallback) {
-  if (!JBListCell::init(size))
-    return false;
-  m_string = string;
-  m_callback = callback;
-  m_actionCallback = actionCallback;
-  m_last = last;
-
-  this->setContentSize(size);
-
-  auto menu = CCMenu::create();
-  menu->setPosition(0, 0);
-  this->addChild(menu);
-
-  auto inputNode = TextInput::create(103.f, "Index url", "chatFont.fnt");
-  inputNode->setScale(1.f);
-  inputNode->setPosition(size.width / 2 - 15.f, size.height / 2);
-  inputNode->setFilter(
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$&'()*+,;=");
-  inputNode->setMaxCharCount(300);
-  inputNode->setWidth(size.width - 60.f);
-  inputNode->setString(string, false);
-  inputNode->setCallback([this](std::string const &str) { m_callback(str); });
-  menu->addChild(inputNode);
-
-  auto spr = m_last ? CCSprite::create("addIcon.png"_spr)
-                    : CCSprite::createWithSpriteFrameName("GJ_deleteIcon_001.png");
-  spr->setScale(0.75f);
-  auto btn =
-      CCMenuItemSpriteExtra::create(spr, this, menu_selector(MultiStringSettingCell::onAction));
-  btn->setPosition(size.width - 15.f, size.height / 2);
-  menu->addChild(btn);
-
-  return true;
-}
-
-void MultiStringSettingCell::onAction(CCObject *target) { m_actionCallback(); }
-
-MultiStringSettingCell *
-MultiStringSettingCell::create(std::string string, CCSize const &size, bool last,
-                               std::function<void(const std::string &)> callback,
-                               std::function<void()> actionCallback) {
-  auto ret = new MultiStringSettingCell();
-  if (ret && ret->init(string, size, last, callback, actionCallback)) {
-    return ret;
-  }
-  CC_SAFE_DELETE(ret);
-  return nullptr;
-}
 
 bool MultiStringSettingNode::init(MultiStringSettingValue *value, float width) {
   if (!SettingNode::init(value))
