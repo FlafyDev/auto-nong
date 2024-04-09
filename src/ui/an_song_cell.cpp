@@ -117,7 +117,7 @@ void ANSongCell::setSong() {
     return;
   }
 
-  SongInfo song = {
+  jukebox::SongInfo song = {
       .path = downloadPath,
       .songName = m_anSong->m_name,
       .authorName = m_anSong->m_artist,
