@@ -37,7 +37,7 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
     }
     if (m_fields->m_nongMenu != nullptr) {
       // Different position if info button is visible...
-      if (m_songs.size() > 1 || m_sfx.size() > 1) {
+      if (m_songs.size() > 1 || m_sfx.size() > 0) {
         m_fields->m_nongMenu->setPosition(ccp(116.f, 30.f));
       } else {
         m_fields->m_nongMenu->setPosition(ccp(135.f, 28.f));
