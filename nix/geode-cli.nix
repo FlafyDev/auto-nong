@@ -8,11 +8,11 @@
 }:
 stdenv.mkDerivation rec {
   pname = "geode-cli";
-  version = "2.12.0";
+  version = "2.13.1";
 
   src = fetchzip {
     url = "https://github.com/geode-sdk/cli/releases/download/v${version}/geode-cli-v${version}-linux.zip";
-    hash = "sha256-CZZ9G5oSFcT3OL0n0kP7dRgOfzaVBklNb7V86irrtlo=";
+    hash = "sha256-2yT7x/m0V+is8k4R1ki/aqzCbyetBE6UXdr67/BnvDc=";
   };
 
   nativeBuildInputs = [autoPatchelfHook];

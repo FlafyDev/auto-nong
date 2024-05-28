@@ -4,8 +4,10 @@
 #include "../ui/an_dropdown_layer.hpp"
 
 struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> {
-  bool m_showNong;
-  CCMenu *m_nongMenu;
+  struct Fields {
+    bool m_showNong;
+    CCMenu *m_nongMenu;
+  };
 
   std::set<int> getSongIds() {
     std::set<int> songIds;

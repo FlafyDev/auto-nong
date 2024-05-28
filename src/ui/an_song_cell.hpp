@@ -14,6 +14,7 @@ protected:
   int m_songId;
   ANSong *m_anSong;
   ANDropdownLayer *m_parentPopup;
+  unsigned int m_parentPopupUID;
   CCLabelBMFont *m_songNameLabel;
   CCLabelBMFont *m_artistNameLabel;
   CCLabelBMFont *m_sourceLabel;

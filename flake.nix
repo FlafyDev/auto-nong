@@ -48,8 +48,8 @@
             jukeboxBindings = pkgs.fetchFromGitHub {
               owner = "Fleeym";
               repo = "sapphire-bindings";
-              rev = "nongd";
-              hash = "sha256-gc9GQxIYrlvr3Qnf1gKzOYSFxBB+A+eZFh1gvRz2q/A=";
+              rev = "3d4040749c1b96956fc4a460b91abbacc53db75b";
+              hash = "sha256-/UAugKml1iixIQ/JRVTO5Nic8lYV2P87/PregG+/4jQ=";
             };
           in pkgs.writeShellScript "fhs-script" ''
             export GEODE_SDK="$HOME/Documents/Geode/"

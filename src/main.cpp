@@ -14,8 +14,10 @@ $on_mod(Loaded) {
 
   AutoNongManager::get()->loadIndexes();
   // Reload the indexes every hour
-  AutoNongManager::get()->schedule(schedule_selector(AutoNongManager::loadIndexesSchedule), 60 * 60,
-                                   kCCRepeatForever, 0);
+  // AutoNongManager::get()->schedule(schedule_selector(AutoNongManager::loadIndexesSchedule), 60 *
+  // 60,
+  //                                  kCCRepeatForever, 0);
+
   // Reload the indexes on change
   listenForSettingChanges(
       "indexes", +[](MultiStringSettingStruct value) { AutoNongManager::get()->loadIndexes(); });

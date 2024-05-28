@@ -10,6 +10,7 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   m_songId = songId;
   m_anSong = song;
   m_parentPopup = parentPopup;
+  m_parentPopupUID = parentPopup->m_uID;
 
   CCMenuItemSpriteExtra *button;
   CCSprite *spr;
@@ -108,6 +109,11 @@ void ANSongCell::onDeleteSong(CCObject *target) {
 }
 
 void ANSongCell::setSong() {
+  // m_parentPopup's data can corrupt at this point. This is how I verify it doesn't.
+  if (m_parentPopup->m_uID != m_parentPopupUID) {
+    return;
+  }
+
   setButtonsVisible();
   fs::path downloadPath = getFileDownloadPath(false);
   const Ref<CustomSongWidget> customSongWidget = m_parentPopup->m_parentWidget;
