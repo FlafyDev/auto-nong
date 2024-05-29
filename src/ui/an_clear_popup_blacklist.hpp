@@ -14,7 +14,7 @@ class ANClearPPBlacklistSettingValue : public SettingValue {
   int m_unused;
 
 public:
-  ANClearPPBlacklistSettingValue(std::string const &key, std::string const &modID, int unused)
+  ANClearPPBlacklistSettingValue(String const &key, String const &modID, int unused)
       : SettingValue(key, modID), m_unused(unused) {}
 
   bool load(matjson::Value const &json) override {

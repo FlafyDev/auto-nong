@@ -1,4 +1,5 @@
 #include "an_clear_popup_blacklist.hpp"
+#include "../includes/geode.hpp"
 #include "../types/serializable_vector.hpp"
 
 SettingNode *ANClearPPBlacklistSettingValue::createNode(float width) {
@@ -6,8 +7,10 @@ SettingNode *ANClearPPBlacklistSettingValue::createNode(float width) {
 }
 
 bool ANClearPPBlacklistSettingNode::init(ANClearPPBlacklistSettingValue *value, float width) {
-  if (!SettingNode::init(value))
+  if (!SettingNode::init(value)) {
     return false;
+  }
+
   this->value = value;
 
   float height = 40.f;
@@ -42,13 +45,9 @@ void ANClearPPBlacklistSettingNode::onReset(CCObject *target) {
 }
 
 void ANClearPPBlacklistSettingNode::commit() { this->dispatchCommitted(); }
-
 bool ANClearPPBlacklistSettingNode::hasUncommittedChanges() { return false; }
-
 bool ANClearPPBlacklistSettingNode::hasNonDefaultValue() { return false; }
-
 void ANClearPPBlacklistSettingNode::resetToDefault() {}
-
 ANClearPPBlacklistSettingNode *
 ANClearPPBlacklistSettingNode::create(ANClearPPBlacklistSettingValue *value, float width) {
   auto ret = new ANClearPPBlacklistSettingNode();

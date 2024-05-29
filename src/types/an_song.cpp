@@ -1,6 +1,7 @@
 #include "an_song.hpp"
+#include "../includes/geode.hpp"
 
-std::string ANSong::getSource() {
+String ANSong::getSource() {
   if (typeid(*this) == typeid(ANYTSong)) {
     return "youtube";
   } else if (typeid(*this) == typeid(ANHostSong)) {

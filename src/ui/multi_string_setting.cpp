@@ -10,14 +10,14 @@ SettingNode *MultiStringSettingValue::createNode(float width) {
 }
 
 class MultiStringSettingPopup
-    : public geode::Popup<std::vector<std::string>, std::function<void(std::vector<std::string>)>> {
+    : public geode::Popup<Vec<String>, std::function<void(std::vector<String>)>> {
 protected:
-  std::vector<std::string> m_localValue;
-  std::function<void(std::vector<std::string>)> m_newStringsCallback;
+  Vec<String> m_localValue;
+  std::function<void(Vec<String>)> m_newStringsCallback;
   CCMenu *m_listMenu;
   ListView *m_list;
-  bool setup(std::vector<std::string> localValue,
-             std::function<void(std::vector<std::string>)> newStringsCallback) override {
+  bool setup(Vec<String> localValue,
+             std::function<void(std::vector<String>)> newStringsCallback) override {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     m_localValue = localValue;
     m_newStringsCallback = newStringsCallback;
@@ -83,7 +83,7 @@ protected:
       inputNode->setMaxCharCount(300);
       inputNode->setWidth(size2.width - 60.f);
       inputNode->setString(m_localValue[i], false);
-      inputNode->setCallback([this, i](std::string const &str) {
+      inputNode->setCallback([this, i](String const &str) {
         m_localValue[i] = str;
         m_newStringsCallback(m_localValue);
       });
@@ -126,8 +126,7 @@ protected:
 
 public:
   static MultiStringSettingPopup *
-  create(std::vector<std::string> localValue,
-         std::function<void(std::vector<std::string>)> newStringsCallback) {
+  create(Vec<String> localValue, std::function<void(std::vector<String>)> newStringsCallback) {
     auto ret = new MultiStringSettingPopup();
     if (ret && ret->initAnchored(420.f, 160.f, localValue, newStringsCallback)) {
       ret->autorelease();
@@ -142,7 +141,7 @@ bool MultiStringSettingNode::init(MultiStringSettingValue *value, float width) {
   if (!SettingNode::init(value))
     return false;
   this->m_value = value;
-  for (std::string &str : value->getStrings()) {
+  for (String &str : value->getStrings()) {
     m_localValue.push_back(str);
   }
 
@@ -155,9 +154,9 @@ bool MultiStringSettingNode::init(MultiStringSettingValue *value, float width) {
 
   // No way to get the JSON without hardcoding the setting ID...
   auto settingJson = Mod::get()->getSettingDefinition("indexes")->get<CustomSetting>()->json;
-  m_defaultValue = settingJson->get<std::vector<std::string>>("default");
-  m_name = settingJson->get<std::string>("name");
-  m_description = settingJson->get<std::string>("description");
+  m_defaultValue = settingJson->get<Vec<String>>("default");
+  m_name = settingJson->get<String>("name");
+  m_description = settingJson->get<String>("description");
 
   m_label = CCLabelBMFont::create(m_name.c_str(), "bigFont.fnt");
   m_label->setAnchorPoint({0.f, 0.5f});
@@ -195,11 +194,10 @@ bool MultiStringSettingNode::init(MultiStringSettingValue *value, float width) {
 }
 
 void MultiStringSettingNode::onView(CCObject *) {
-  auto popup =
-      MultiStringSettingPopup::create(m_localValue, [this](std::vector<std::string> newStrings) {
-        m_localValue = newStrings;
-        updateVisuals();
-      });
+  auto popup = MultiStringSettingPopup::create(m_localValue, [this](Vec<String> newStrings) {
+    m_localValue = newStrings;
+    updateVisuals();
+  });
   popup->m_noElasticity = true;
   popup->show();
 }
@@ -244,7 +242,7 @@ bool MultiStringSettingNode::hasNonDefaultValue() {
 
 void MultiStringSettingNode::resetToDefault() {
   m_localValue.clear();
-  for (std::string &str : m_defaultValue) {
+  for (String &str : m_defaultValue) {
     m_localValue.push_back(str);
   }
   updateVisuals();

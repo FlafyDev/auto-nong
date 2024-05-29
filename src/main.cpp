@@ -6,10 +6,9 @@
 
 $on_mod(Loaded) {
   Mod::get()->addCustomSetting<MultiStringSettingValue>(
-      "indexes", Mod::get()
-                     ->getSettingDefinition("indexes")
-                     ->get<CustomSetting>()
-                     ->json->get<std::vector<std::string>>("default"));
+      "indexes",
+      Mod::get()->getSettingDefinition("indexes")->get<CustomSetting>()->json->get<Vec<String>>(
+          "default"));
   Mod::get()->addCustomSetting<ANClearPPBlacklistSettingValue>("_blacklistPPClear", 0);
 
   AutoNongManager::get()->loadIndexes();

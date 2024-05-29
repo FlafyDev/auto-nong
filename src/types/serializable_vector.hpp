@@ -1,13 +1,14 @@
 #pragma once
 
+#include "../includes/geode.hpp"
 #include <matjson.hpp>
 #include <vector>
 
-template <> struct matjson::Serialize<std::vector<int>> {
+template <> struct matjson::Serialize<Vec<int>> {
   static bool is_json(matjson::Value const &value) { return value.is_array(); }
 
-  static std::vector<int> from_json(matjson::Value const &value) {
-    std::vector<int> vec;
+  static Vec<int> from_json(matjson::Value const &value) {
+    Vec<int> vec;
     auto array = value.as_array();
     for (auto const &elem : array) {
       vec.push_back(elem.as_int());
@@ -15,7 +16,7 @@ template <> struct matjson::Serialize<std::vector<int>> {
     return vec;
   }
 
-  static matjson::Value to_json(std::vector<int> const &vec) {
+  static matjson::Value to_json(Vec<int> const &vec) {
     auto array = matjson::Array();
     for (auto const &elem : vec) {
       array.push_back(elem);
@@ -24,11 +25,11 @@ template <> struct matjson::Serialize<std::vector<int>> {
   }
 };
 
-template <> struct matjson::Serialize<std::vector<std::string>> {
+template <> struct matjson::Serialize<Vec<String>> {
   static bool is_json(matjson::Value const &value) { return value.is_array(); }
 
-  static std::vector<std::string> from_json(matjson::Value const &value) {
-    std::vector<std::string> vec;
+  static Vec<String> from_json(matjson::Value const &value) {
+    Vec<String> vec;
     auto array = value.as_array();
     for (auto const &elem : array) {
       vec.push_back(elem.as_string());
@@ -36,7 +37,7 @@ template <> struct matjson::Serialize<std::vector<std::string>> {
     return vec;
   }
 
-  static matjson::Value to_json(std::vector<std::string> const &vec) {
+  static matjson::Value to_json(Vec<String> const &vec) {
     auto array = matjson::Array();
     for (auto const &elem : vec) {
       array.push_back(elem);

@@ -1,7 +1,12 @@
 #include "an_song_cell.hpp"
 #include "../types/an_song.hpp"
 #include "../utils/utils.hpp"
+#include "Geode/ui/Notification.hpp"
+#include "Geode/utils/cocos.hpp"
+#include "fleym.nongd/include/jukebox.hpp"
+#include "fleym.nongd/src/types/song_info.hpp"
 #include "list_cell.hpp"
+#include <filesystem>
 
 bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size) {
   if (!JBListCell::init(size))
@@ -10,7 +15,6 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   m_songId = songId;
   m_anSong = song;
   m_parentPopup = parentPopup;
-  m_parentPopupUID = parentPopup->m_uID;
 
   CCMenuItemSpriteExtra *button;
   CCSprite *spr;
@@ -25,23 +29,24 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
 
   menu = CCMenu::create();
   menu->addChild(button);
-
   menu->setAnchorPoint(ccp(0, 0));
   menu->setPosition(ccp(295.f, 18.f));
   menu->setID("button-menu1");
+
   this->addChild(menu);
 
   // Set button
   spr = ButtonSprite::create("Set");
   spr->setScale(0.6f);
+
   button = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ANSongCell::onSetSong));
 
   menu = CCMenu::create();
   menu->addChild(button);
-
   menu->setAnchorPoint(ccp(0, 0));
   menu->setPosition(ccp(290.f, 42.f));
   menu->setID("button-menu2");
+
   this->addChild(menu);
 
   // Delete button
@@ -63,7 +68,6 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   m_songNameLabel = CCLabelBMFont::create(m_anSong->m_name.c_str(), "bigFont.fnt");
   m_songNameLabel->limitLabelWidth(220.f, 0.7f, 0.1f);
   m_songNameLabel->setID("song-name");
-
   m_artistNameLabel = CCLabelBMFont::create(m_anSong->m_artist.c_str(), "goldFont.fnt");
   m_artistNameLabel->limitLabelWidth(120.f, 0.7f, 0.1f);
   m_artistNameLabel->setID("artist-name");
@@ -109,55 +113,59 @@ void ANSongCell::onDeleteSong(CCObject *target) {
 }
 
 void ANSongCell::setSong() {
-  try {
-    // m_parentPopup's data can corrupt at this point. This is how I verify it doesn't.
-    if (m_parentPopup->m_uID != m_parentPopupUID) {
-      return;
-    }
-
-    setButtonsVisible();
-    fs::path downloadPath = getFileDownloadPath(false);
-    const Ref<CustomSongWidget> customSongWidget = m_parentPopup->m_parentWidget;
-
-    if (!fs::exists(downloadPath)) {
-      Notification::create("File doesn't exist", NotificationIcon::Error)->show();
-      return;
-    }
-
-    jukebox::SongInfo song = {
-        .path = downloadPath,
-        .songName = m_anSong->m_name,
-        .authorName = m_anSong->m_artist,
-        .songUrl = "local",
-    };
-
-    jukebox::addNong(song, m_songId);
-    jukebox::setActiveSong(song, m_songId);
-    customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
-    customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
-    customSongWidget->updateSongObject(customSongWidget->m_songInfoObject);
-  } catch (const std::exception &e) {
-    log::error("Failed to set song: {}", e.what());
-    Notification::create("Failed to set song", NotificationIcon::Error)->show();
+  if (m_parentPopup->m_uID != m_parentPopupUID) {
+    return;
   }
+
+  setButtonsVisible();
+
+  fs::path download_path = getFileDownloadPath(false);
+  const Ref<CustomSongWidget> custom_song_widget = m_parentPopup->m_parentWidget;
+
+  if (!fs::exists(download_path)) {
+    Notification::create("File doesn't exist", NotificationIcon::Error)->show();
+    return;
+  }
+
+  jukebox::SongInfo song = {
+      .path = download_path,
+      .songName = m_anSong->m_name,
+      .authorName = m_anSong->m_artist,
+      .songUrl = "local",
+  };
+
+  jukebox::addNong(song, m_songId);
+  jukebox::setActiveSong(song, m_songId);
+
+  custom_song_widget->m_songInfoObject->m_artistName = m_anSong->m_artist;
+  custom_song_widget->m_songInfoObject->m_songName = m_anSong->m_name;
+  custom_song_widget->updateSongObject(custom_song_widget->m_songInfoObject);
 }
 
 fs::path ANSongCell::getFileDownloadPath(bool create) {
+#ifdef GEODE_IS_ANDROID
+  String baseDir = "/storage/emulated/0/nongs";
+  if (!fs::exists(baseDir)) {
+    fs::create_directories(baseDir);
+  }
+#else
+  String baseDir = Mod::get()->getSaveDir().string();
+#endif
+
   if (typeid(*m_anSong) == typeid(ANYTSong)) {
     const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong);
-    const std::string videoId = ytSong->m_ytId;
+    const String videoId = ytSong->m_ytId;
     if (create) {
-      fs::create_directory(fmt::format("{}\\youtube", Mod::get()->getSaveDir().string()));
+      fs::create_directories(fmt::format("{}/youtube", baseDir));
     }
-    return fmt::format("{}\\youtube\\{}.mp3", Mod::get()->getSaveDir().string(), videoId);
+    return fmt::format("{}/youtube/{}.mp3", baseDir, videoId);
   }
   if (typeid(*m_anSong) == typeid(ANHostSong)) {
     const ANHostSong *hostSong = static_cast<ANHostSong *>(m_anSong);
     if (create) {
-      fs::create_directory(fmt::format("{}\\host", Mod::get()->getSaveDir().string()));
+      fs::create_directories(fmt::format("{}/host", baseDir));
     }
-    return fmt::format("{}\\host\\{}.mp3", Mod::get()->getSaveDir().string(),
-                       urlToFilename(hostSong->m_url));
+    return fmt::format("{}/host/{}.mp3", baseDir, urlToFilename(hostSong->m_url));
   }
   return "";
 }
@@ -165,8 +173,8 @@ fs::path ANSongCell::getFileDownloadPath(bool create) {
 void ANSongCell::downloadFromYtDlp() {
   m_currentlyDownloading = true;
   const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong);
-  const fs::path ytDlpPath = Mod::get()->getSettingValue<std::string>("yt-dlp-path");
-  const std::string videoId = ytSong->m_ytId;
+  const fs::path ytDlpPath = Mod::get()->getSettingValue<String>("yt-dlp-path");
+  const String videoId = ytSong->m_ytId;
   const fs::path downloadPath = getFileDownloadPath(true);
 
   if (!fs::exists(ytDlpPath)) {
@@ -175,15 +183,15 @@ void ANSongCell::downloadFromYtDlp() {
     return;
   }
 
-  std::string ytDlpCommand = fmt::format("\"{}\" -x --audio-format mp3 \"{}\" -o \"{}\"", ytDlpPath,
-                                         videoId, downloadPath);
+  String ytDlpCommand = fmt::format("\"{}\" -x --audio-format mp3 \"{}\" -o \"{}\"", ytDlpPath,
+                                    videoId, downloadPath);
 
   auto notif = Notification::create("Downloading using yt dlp", NotificationIcon::Loading, 0);
   notif->setTime(NOTIFICATION_DEFAULT_TIME);
   notif->show();
 
   std::thread commandThread([this, ytSong, ytDlpCommand]() {
-    std::string command = ytDlpCommand;
+    String command = ytDlpCommand;
 
     int result = std::system(fmt::format("\"{}\"", command).c_str());
 
@@ -212,11 +220,11 @@ void ANSongCell::downloadFromYtDlp() {
 
 void ANSongCell::downloadFromCobalt() {
   m_currentlyDownloading = true;
-  const std::string apiUrl = "https://co.wuk.sh/api/json";
+  const String apiUrl = "https://co.wuk.sh/api/json";
   const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong);
-  const std::string videoId = ytSong->m_ytId;
+  const String videoId = ytSong->m_ytId;
 
-  std::unordered_map<std::string, std::string> parameters = {
+  std::unordered_map<String, String> parameters = {
       {"url", fmt::format("https://www.youtube.com/watch?v={}", videoId)},
       {"aFormat", "mp3"},
       {"isAudioOnly", "true"}};
@@ -225,7 +233,7 @@ void ANSongCell::downloadFromCobalt() {
   for (auto const &[key, value] : parameters) {
     parameters_json[key] = value;
   }
-  std::string body = parameters_json.dump(matjson::NO_INDENTATION);
+  String body = parameters_json.dump(matjson::NO_INDENTATION);
 
   auto notif = Notification::create("Downloading using Cobalt Tools", NotificationIcon::Loading, 0);
   notif->setTime(NOTIFICATION_DEFAULT_TIME);
@@ -237,11 +245,11 @@ void ANSongCell::downloadFromCobalt() {
       .bodyRaw(body)
       .post(apiUrl)
       .text()
-      .then([this](const std::string &r) {
+      .then([this](const String &r) {
         matjson::Value data = matjson::parse(r);
 
         if (data["status"] == "stream") {
-          std::string audio_url = data["url"].as_string();
+          String audio_url = data["url"].as_string();
 
           geode::utils::web::AsyncWebRequest()
               .get(audio_url)

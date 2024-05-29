@@ -1,6 +1,5 @@
-#include <Geode/binding/StatsCell.hpp>
-
 #include "list_cell.hpp"
+#include <Geode/binding/StatsCell.hpp>
 
 bool JBListCell::init(CCSize const &size) {
   m_width = size.width;

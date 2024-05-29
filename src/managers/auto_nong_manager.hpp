@@ -15,10 +15,10 @@ class AutoNongManager : public CCNode {
 protected:
   inline static AutoNongManager *m_instance = nullptr;
   int m_currentLevelID = 0;
-  std::map<int, std::vector<std::shared_ptr<ANSong>>> m_songIDToNongs;
+  Map<int, Vec<Shared<ANSong>>> m_songIDToNongs;
 
 public:
-  std::vector<std::shared_ptr<ANSong>> getNongsFromSongID(int songID);
+  Vec<Shared<ANSong>> getNongsFromSongID(int songID);
   bool anySongExists(std::set<int> songIDs);
   void loadIndexes();
   int getCurrentLevelID();

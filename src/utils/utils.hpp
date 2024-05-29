@@ -1,12 +1,10 @@
 #pragma once
 
+#include "../includes/geode.hpp"
 #include <string>
 #include <vector>
 
-std::vector<std::string> splitString(const std::string &str, char delimiter);
-
-std::string urlToFilename(const std::string &url);
-
-std::string getSubstringAfterSlash(const std::string &input);
-
-std::string decompressGz(std::vector<uint8_t> &compressedData);
+Vec<std::string> splitString(str str, char delimiter);
+std::string urlToFilename(str url);
+std::string getSubstringAfterSlash(str input);
+std::string decompressGz(Vec<uint8_t> &compressedData);

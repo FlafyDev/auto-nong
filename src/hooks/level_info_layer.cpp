@@ -6,7 +6,9 @@ struct ANLevelInfoLayer : geode::Modify<ANLevelInfoLayer, LevelInfoLayer> {
     if (!LevelInfoLayer::init(level, p1)) {
       return false;
     }
+
     AutoNongManager::get()->setCurrentLevelID(level->m_levelID);
+
     return true;
   }
 };

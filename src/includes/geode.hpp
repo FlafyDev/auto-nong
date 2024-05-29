@@ -36,6 +36,17 @@
 #include <Geode/utils/cocos.hpp>
 #include <Geode/utils/string.hpp>
 #include <fleym.nongd/include/jukebox.hpp>
+#include <map>
 #include <matjson.hpp>
+#include <set>
+
+template <typename T> using Vec = std::vector<T>;
+template <typename K, typename V> using Map = std::map<K, V>;
+template <typename T> using Set = std::set<T>;
+template <typename T> using Opt = std::optional<T>;
+template <typename T> using Shared = std::shared_ptr<T>;
+
+using String = std::string;
+using str = const std::string &;
 
 using namespace geode::prelude;

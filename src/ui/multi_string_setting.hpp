@@ -6,18 +6,17 @@
 using namespace geode::prelude;
 
 struct MultiStringSettingStruct {
-  std::vector<std::string> m_strings;
+  Vec<String> m_strings;
 };
 
 class MultiStringSettingValue;
 
 class MultiStringSettingValue : public SettingValue {
 protected:
-  std::vector<std::string> m_strings;
+  Vec<String> m_strings;
 
 public:
-  MultiStringSettingValue(std::string const &key, std::string const &modID,
-                          std::vector<std::string> strings)
+  MultiStringSettingValue(String const &key, String const &modID, Vec<String> strings)
       : SettingValue(key, modID), m_strings(strings) {}
 
   bool load(matjson::Value const &json) override {
@@ -40,12 +39,12 @@ public:
 
   SettingNode *createNode(float width) override;
 
-  void setStrings(std::vector<std::string> strings) {
+  void setStrings(Vec<String> strings) {
     this->m_strings = strings;
     this->valueChanged();
   }
 
-  std::vector<std::string> getStrings() const { return this->m_strings; }
+  Vec<String> getStrings() const { return this->m_strings; }
 };
 
 template <> struct SettingValueSetter<MultiStringSettingStruct> {
@@ -62,10 +61,10 @@ protected:
   MultiStringSettingValue *m_value;
   CCMenuItemSpriteExtra *m_resetBtn;
   CCLabelBMFont *m_label;
-  std::vector<std::string> m_localValue;
-  std::string m_name;
-  std::string m_description;
-  std::vector<std::string> m_defaultValue;
+  Vec<String> m_localValue;
+  String m_name;
+  String m_description;
+  Vec<String> m_defaultValue;
 
   bool init(MultiStringSettingValue *value, float width);
 

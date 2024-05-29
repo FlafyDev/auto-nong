@@ -1,7 +1,8 @@
 #include "an_dropdown_layer.hpp"
+#include "../includes/geode.hpp"
 #include "an_song_cell.hpp"
 
-bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> songCandidates,
+bool ANDropdownLayer::setup(int songId, Vec<Shared<ANSong>> songCandidates,
                             CustomSongWidget *parent, int popupNumber, int totalPopups) {
   m_songID = songId;
   m_songCandidates = songCandidates;

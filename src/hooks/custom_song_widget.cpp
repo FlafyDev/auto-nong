@@ -9,8 +9,8 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
     CCMenu *m_nongMenu;
   };
 
-  std::set<int> getSongIds() {
-    std::set<int> songIds;
+  Set<int> getSongIds() {
+    Set<int> songIds;
     for (const auto &pair : m_songs) {
       songIds.insert(pair.first);
     }
