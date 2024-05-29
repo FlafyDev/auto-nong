@@ -33,7 +33,14 @@ void AutoNongManager::loadIndexes() {
         .bytes()
         .then([this, index](const geode::ByteVector &r) {
           std::vector<uint8_t> rVec = r;
-          std::string jsonString = decompressGz(rVec);
+          bool isGzip = (rVec.size() > 2) && (rVec[0] == 0x1F) && (rVec[1] == 0x8B);
+
+          std::string jsonString;
+          if (isGzip) {
+            jsonString = decompressGz(rVec);
+          } else {
+            jsonString = std::string(rVec.begin(), rVec.end());
+          }
 
           matjson::Value jsonObj = matjson::parse(jsonString);
 
