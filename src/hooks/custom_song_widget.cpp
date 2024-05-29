@@ -21,7 +21,8 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
   void updateSongInfo() {
     CustomSongWidget::updateSongInfo();
     if (!m_fields->m_showNong) {
-      m_fields->m_showNong = GameManager::get()->m_levelEditorLayer == nullptr &&
+      m_fields->m_showNong = !m_isMusicLibrary && !m_showPlayMusicBtn &&
+                             GameManager::get()->m_levelEditorLayer == nullptr &&
                              AutoNongManager::get()->anySongExists(getSongIds());
 
       if (m_fields->m_showNong) {
