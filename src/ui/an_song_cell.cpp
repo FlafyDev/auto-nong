@@ -109,31 +109,37 @@ void ANSongCell::onDeleteSong(CCObject *target) {
 }
 
 void ANSongCell::setSong() {
-  // m_parentPopup's data can corrupt at this point. This is how I verify it doesn't.
-  if (m_parentPopup->m_uID != m_parentPopupUID) {
-    return;
+  try {
+    // m_parentPopup's data can corrupt at this point. This is how I verify it doesn't.
+    if (m_parentPopup->m_uID != m_parentPopupUID) {
+      return;
+    }
+
+    setButtonsVisible();
+    fs::path downloadPath = getFileDownloadPath(false);
+    const Ref<CustomSongWidget> customSongWidget = m_parentPopup->m_parentWidget;
+
+    if (!fs::exists(downloadPath)) {
+      Notification::create("File doesn't exist", NotificationIcon::Error)->show();
+      return;
+    }
+
+    jukebox::SongInfo song = {
+        .path = downloadPath,
+        .songName = m_anSong->m_name,
+        .authorName = m_anSong->m_artist,
+        .songUrl = "local",
+    };
+
+    jukebox::addNong(song, m_songId);
+    jukebox::setActiveSong(song, m_songId);
+    customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
+    customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
+    customSongWidget->updateSongObject(customSongWidget->m_songInfoObject);
+  } catch (const std::exception &e) {
+    log::error("Failed to set song: {}", e.what());
+    Notification::create("Failed to set song", NotificationIcon::Error)->show();
   }
-
-  setButtonsVisible();
-  fs::path downloadPath = getFileDownloadPath(false);
-  const Ref<CustomSongWidget> customSongWidget = m_parentPopup->m_parentWidget;
-
-  if (!fs::exists(downloadPath)) {
-    Notification::create("File doesn't exist", NotificationIcon::Error)->show();
-    return;
-  }
-
-  jukebox::SongInfo song = {
-      .path = downloadPath,
-      .songName = m_anSong->m_name,
-      .authorName = m_anSong->m_artist,
-      .songUrl = "local",
-  };
-  jukebox::addNong(song, m_songId);
-  jukebox::setActiveSong(song, m_songId);
-  customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
-  customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
-  customSongWidget->updateSongObject(customSongWidget->m_songInfoObject);
 }
 
 fs::path ANSongCell::getFileDownloadPath(bool create) {
