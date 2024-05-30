@@ -9,4 +9,4 @@ std::string urlToFilename(const std::string &url);
 
 std::string getSubstringAfterSlash(const std::string &input);
 
-std::string decompressGz(std::vector<uint8_t> &compressedData);
+std::string decompressGz(std::vector<uint8_t> &compressedData, bool isJson = false);
