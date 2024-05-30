@@ -1,4 +1,5 @@
 #include "auto_nong_manager.hpp"
+#include <matjson.hpp>
 
 std::vector<std::shared_ptr<ANSong>> AutoNongManager::getNongsFromSongID(int songID) {
   if (m_songIDToNongs.find(songID) == m_songIDToNongs.end()) {
@@ -37,14 +38,22 @@ void AutoNongManager::loadIndexes() {
 
           std::string jsonString;
           if (isGzip) {
-            jsonString = decompressGz(rVec);
+            jsonString = decompressGz(rVec, true);
           } else {
             jsonString = std::string(rVec.begin(), rVec.end());
           }
 
-          matjson::Value jsonObj = matjson::parse(jsonString);
+          std::string error;
+          std::optional<matjson::Value> jsonObj = matjson::parse(jsonString, error);
 
-          for (const auto &songData : jsonObj.as_array()) {
+          if (!jsonObj.has_value()) {
+            log::warn("Failed to parse JSON: {}", error);
+            Loader::get()->queueInMainThread(
+                [this, index]() { log::info("Loaded index: {}", index); });
+            return;
+          }
+
+          for (const auto &songData : jsonObj.value().as_array()) {
             std::string name = songData["name"].as_string();
             std::string artist = songData.contains("artist") ? songData["artist"].as_string() : "";
             std::string source = songData["source"].as_string();

@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include "../includes/geode.hpp"
+#include <matjson.hpp>
 #include <sstream>
 
 std::vector<std::string> splitString(const std::string &str, char delimiter) {
@@ -42,10 +43,25 @@ std::string getSubstringAfterSlash(const std::string &input) {
   }
 }
 
-std::string decompressGz(std::vector<uint8_t> &compressedData) {
-  uint8_t *inflatedData;
+std::string decompressGz(std::vector<uint8_t> &compressedData, bool isJson) {
+  uint8_t *inflatedData = nullptr;
   ZipUtils::ccInflateMemory(compressedData.data(), compressedData.size(), &inflatedData);
-  std::string inflatedString(reinterpret_cast<char *>(inflatedData));
+
+  std::string inflatedString;
+  const int maxRetries = 100;
+  int retries = 0;
+
+  std::string jsonError;
+  while (inflatedString.empty() && retries < maxRetries) {
+    inflatedString = std::string(reinterpret_cast<char *>(inflatedData));
+    if (!inflatedString.empty() &&
+        (!isJson || matjson::parse(inflatedString, jsonError).has_value())) {
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    retries++;
+  }
+
   free(inflatedData);
   return inflatedString;
 }
