@@ -3,7 +3,8 @@
 #include "../utils/utils.hpp"
 #include "list_cell.hpp"
 
-bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size) {
+bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size,
+                      bool isRobtopSong) {
   if (!JBListCell::init(size))
     return false;
 
@@ -11,6 +12,7 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   m_anSong = song;
   m_parentPopup = parentPopup;
   m_parentPopupUID = parentPopup->m_uID;
+  m_isRobtopSong = isRobtopSong;
 
   CCMenuItemSpriteExtra *button;
   CCSprite *spr;
@@ -131,8 +133,9 @@ void ANSongCell::setSong() {
         .songUrl = "local",
     };
 
-    jukebox::addNong(song, m_songId);
-    jukebox::setActiveSong(song, m_songId);
+    int jukeboxSongId = m_isRobtopSong ? -m_songId - 1 : m_songId;
+    jukebox::addNong(song, jukeboxSongId);
+    jukebox::setActiveSong(song, jukeboxSongId);
     customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
     customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
     customSongWidget->updateSongObject(customSongWidget->m_songInfoObject);
@@ -325,9 +328,9 @@ void ANSongCell::onDownload(CCObject *target) {
 }
 
 ANSongCell *ANSongCell::create(int songId, ANSong *song, ANDropdownLayer *parentPopup,
-                               CCSize const &size) {
+                               CCSize const &size, bool isRobtopSong) {
   auto ret = new ANSongCell();
-  if (ret && ret->init(songId, song, parentPopup, size)) {
+  if (ret && ret->init(songId, song, parentPopup, size, isRobtopSong)) {
     return ret;
   }
   CC_SAFE_DELETE(ret);

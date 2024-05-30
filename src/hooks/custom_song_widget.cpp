@@ -83,9 +83,8 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
       auto anSongs = AutoNongManager::get()->getNongsFromSongID(songId);
       if (!anSongs.empty()) {
         // Would be better to handle m_isRobtopSong later in the code.
-        auto layer =
-            ANDropdownLayer::create(m_isRobtopSong ? -songId - 1 : songId,
-                                    AutoNongManager::get()->getNongsFromSongID(songId), this, 1, 1);
+        auto layer = ANDropdownLayer::create(
+            songId, AutoNongManager::get()->getNongsFromSongID(songId), this, 1, 1, m_isRobtopSong);
         layer->m_noElasticity = true;
         layer->setZOrder(106);
         layer->show();

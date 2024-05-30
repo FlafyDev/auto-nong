@@ -21,8 +21,10 @@ protected:
   CCLayer *m_songInfoLayer;
   CCMenuItemSpriteExtra *m_trashButton;
   bool m_currentlyDownloading = false;
+  bool m_isRobtopSong = false;
 
-  bool init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size);
+  bool init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size,
+            bool isRobtopSong);
 
 public:
   void downloadFromYtDlp();
@@ -34,5 +36,5 @@ public:
   void onSetSong(CCObject *);
   void onDownload(CCObject *);
   static ANSongCell *create(int songId, ANSong *song, ANDropdownLayer *parentPopup,
-                            CCSize const &size);
+                            CCSize const &size, bool isRobtopSong);
 };

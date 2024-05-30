@@ -2,12 +2,14 @@
 #include "an_song_cell.hpp"
 
 bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> songCandidates,
-                            CustomSongWidget *parent, int popupNumber, int totalPopups) {
+                            CustomSongWidget *parent, int popupNumber, int totalPopups,
+                            bool isRobtopSong) {
   m_songID = songId;
   m_songCandidates = songCandidates;
   m_parentWidget = parent;
   m_popupNumber = popupNumber;
   m_totalPopups = totalPopups;
+  m_isRobtopSong = isRobtopSong;
 
   auto contentSize = m_mainLayer->getContentSize();
 
@@ -29,7 +31,7 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   auto songs = CCArray::create();
 
   for (auto song : m_songCandidates) {
-    songs->addObject(ANSongCell::create(songId, song.get(), this, m_cellSize));
+    songs->addObject(ANSongCell::create(songId, song.get(), this, m_cellSize, isRobtopSong));
   }
 
   auto list = ListView::create(songs, m_cellSize.height, m_cellSize.width, 200.f);
