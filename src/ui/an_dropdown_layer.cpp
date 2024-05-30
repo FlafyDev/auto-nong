@@ -21,6 +21,21 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   manifestLabel->setID("manifest-label");
   m_mainLayer->addChild(manifestLabel);
 
+  auto plusSpr = CCSprite::createWithSpriteFrameName("GJ_plusBtn_001.png");
+  plusSpr->setScale(.8f);
+  auto addNongBtn =
+      CCMenuItemSpriteExtra::create(plusSpr, this, menu_selector(ANDropdownLayer::onAddNong));
+  addNongBtn->setPosition(contentSize.width - 26.f, 28.f);
+  addNongBtn->setID("add-nong-btn");
+
+  auto menu = CCMenu::create();
+  menu->setAnchorPoint(ccp(0, 0));
+  menu->setPosition(ccp(0, 0));
+  menu->setID("button-menu2");
+  menu->addChild(addNongBtn);
+  menu->setZOrder(2);
+  m_mainLayer->addChild(menu);
+
   auto titleLabel =
       CCLabelBMFont::create(fmt::format("Replace song for {}", songId).c_str(), "goldFont.fnt");
   titleLabel->setPosition(contentSize.width / 2, contentSize.height - 22.f);
@@ -65,4 +80,12 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
 
   handleTouchPriority(this);
   return true;
+}
+
+void ANDropdownLayer::onAddNong(CCObject *) {
+  CCApplication::get()->openURL(
+      fmt::format("https://github.com/FlafyDev/auto-nong-indexes/issues/"
+                  "new?template=add-nong-song.yml&title=Add+Nong+Song&song-id={}",
+                  m_songID)
+          .c_str());
 }

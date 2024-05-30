@@ -34,4 +34,6 @@ public:
     CC_SAFE_DELETE(ret);
     return nullptr;
   }
+
+  void onAddNong(CCObject *);
 };
