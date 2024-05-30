@@ -11,8 +11,8 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   m_songId = songId;
   m_anSong = song;
   m_parentPopup = parentPopup;
-  m_parentPopupUID = parentPopup->m_uID;
   m_isRobtopSong = isRobtopSong;
+  m_customSongWidget = parentPopup->m_parentWidget;
 
   CCMenuItemSpriteExtra *button;
   CCSprite *spr;
@@ -112,14 +112,8 @@ void ANSongCell::onDeleteSong(CCObject *target) {
 
 void ANSongCell::setSong() {
   try {
-    // m_parentPopup's data can corrupt at this point. This is how I verify it doesn't.
-    if (m_parentPopup->m_uID != m_parentPopupUID) {
-      return;
-    }
-
     setButtonsVisible();
     fs::path downloadPath = getFileDownloadPath(false);
-    const Ref<CustomSongWidget> customSongWidget = m_parentPopup->m_parentWidget;
 
     if (!fs::exists(downloadPath)) {
       Notification::create("File doesn't exist", NotificationIcon::Error)->show();
@@ -136,9 +130,9 @@ void ANSongCell::setSong() {
     int jukeboxSongId = m_isRobtopSong ? -m_songId - 1 : m_songId;
     jukebox::addNong(song, jukeboxSongId);
     jukebox::setActiveSong(song, jukeboxSongId);
-    customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
-    customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
-    customSongWidget->updateSongObject(customSongWidget->m_songInfoObject);
+    m_customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
+    m_customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
+    m_customSongWidget->updateSongObject(m_customSongWidget->m_songInfoObject);
   } catch (const std::exception &e) {
     log::error("Failed to set song: {}", e.what());
     Notification::create("Failed to set song", NotificationIcon::Error)->show();
