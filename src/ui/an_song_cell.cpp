@@ -143,21 +143,22 @@ void ANSongCell::setSong() {
 }
 
 fs::path ANSongCell::getFileDownloadPath(bool create) {
+  std::string baseDir = Mod::get()->getSaveDir().string();
+
   if (typeid(*m_anSong) == typeid(ANYTSong)) {
     const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong);
     const std::string videoId = ytSong->m_ytId;
     if (create) {
-      fs::create_directory(fmt::format("{}\\youtube", Mod::get()->getSaveDir().string()));
+      fs::create_directories(fmt::format("{}/youtube", baseDir));
     }
-    return fmt::format("{}\\youtube\\{}.mp3", Mod::get()->getSaveDir().string(), videoId);
+    return fmt::format("{}/youtube/{}.mp3", baseDir, videoId);
   }
   if (typeid(*m_anSong) == typeid(ANHostSong)) {
     const ANHostSong *hostSong = static_cast<ANHostSong *>(m_anSong);
     if (create) {
-      fs::create_directory(fmt::format("{}\\host", Mod::get()->getSaveDir().string()));
+      fs::create_directories(fmt::format("{}/host", baseDir));
     }
-    return fmt::format("{}\\host\\{}.mp3", Mod::get()->getSaveDir().string(),
-                       urlToFilename(hostSong->m_url));
+    return fmt::format("{}/host/{}.mp3", baseDir, urlToFilename(hostSong->m_url));
   }
   return "";
 }
