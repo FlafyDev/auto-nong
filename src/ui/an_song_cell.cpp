@@ -83,7 +83,7 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   layout->setAutoScale(false);
   layout->setAxisAlignment(AxisAlignment::Center);
   layout->setCrossAxisLineAlignment(AxisAlignment::Start);
-  m_songInfoLayer->setContentSize(ccp(240.f, this->getContentSize().height - 6.f));
+  m_songInfoLayer->setContentSize(ccp(240.f, this->getContentSize().height - 20.f));
   m_songInfoLayer->setAnchorPoint(ccp(0.f, 0.f));
   m_songInfoLayer->setPosition(ccp(12.f, 1.5f));
   m_songInfoLayer->setLayout(layout);

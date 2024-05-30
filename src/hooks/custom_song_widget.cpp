@@ -27,7 +27,8 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
 
       if (m_fields->m_showNong) {
         this->scheduleOnce(schedule_selector(ANCustomSongWidget::showPopup), 0.2);
-        auto spr = CCSprite::create("logo.png"_spr);
+        // If we use the regular logo.png it doesn't change for medium and low quality graphics.
+        auto spr = CCSprite::create("logo2.png"_spr);
         spr->setScale(0.225f);
 
         auto btn =

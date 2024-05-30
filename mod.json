@@ -18,7 +18,8 @@
   ],
   "resources": {
     "sprites": [
-      "resources/addIcon.png"
+      "resources/addIcon.png",
+      "resources/logo2.png"
     ]
   },
   "settings": {
