@@ -6,6 +6,7 @@
 struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> {
   struct Fields {
     bool m_showNong;
+    bool m_showColored;
     CCMenu *m_nongMenu;
   };
 
@@ -21,14 +22,18 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
   void updateSongInfo() {
     CustomSongWidget::updateSongInfo();
     if (!m_fields->m_showNong) {
+      m_fields->m_showColored = AutoNongManager::get()->anySongExists(getSongIds());
       m_fields->m_showNong = !m_isMusicLibrary && !m_showPlayMusicBtn &&
                              GameManager::get()->m_levelEditorLayer == nullptr &&
-                             AutoNongManager::get()->anySongExists(getSongIds());
-
+                             (Mod::get()->getSettingValue<bool>("always-show-auto-nong-btn") ||
+                              m_fields->m_showColored);
       if (m_fields->m_showNong) {
-        this->scheduleOnce(schedule_selector(ANCustomSongWidget::showPopup), 0.2);
-        // If we use the regular logo.png it doesn't change for medium and low quality graphics.
-        auto spr = CCSprite::create("logo2.png"_spr);
+        if (m_fields->m_showColored) {
+          this->scheduleOnce(schedule_selector(ANCustomSongWidget::showPopup), 0.2);
+        }
+        // If we use the regular `logo.png` it doesn't change for medium and low quality graphics.
+        auto spr = CCSprite::create(m_fields->m_showColored ? "logo_regular.png"_spr
+                                                            : "logo_grayscaled.png"_spr);
         spr->setScale(0.225f);
 
         auto btn =
@@ -81,14 +86,11 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
   void onNongBtn(CCObject *) {
     for (int songId : getSongIds()) {
       auto anSongs = AutoNongManager::get()->getNongsFromSongID(songId);
-      if (!anSongs.empty()) {
-        // Would be better to handle m_isRobtopSong later in the code.
-        auto layer = ANDropdownLayer::create(
-            songId, AutoNongManager::get()->getNongsFromSongID(songId), this, 1, 1, m_isRobtopSong);
-        layer->m_noElasticity = true;
-        layer->setZOrder(106);
-        layer->show();
-      }
+      auto layer = ANDropdownLayer::create(
+          songId, AutoNongManager::get()->getNongsFromSongID(songId), this, 1, 1, m_isRobtopSong);
+      layer->m_noElasticity = true;
+      layer->setZOrder(106);
+      layer->show();
     }
   }
 };

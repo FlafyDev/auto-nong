@@ -19,7 +19,8 @@
   "resources": {
     "sprites": [
       "resources/addIcon.png",
-      "resources/logo2.png"
+      "resources/logo_regular.png",
+      "resources/logo_grayscaled.png"
     ]
   },
   "settings": {
@@ -52,6 +53,12 @@
       "description": "Shows a popup when a level has a NONG song. Only once per level.",
       "type": "bool",
       "default": true
+    },
+    "always-show-auto-nong-btn": {
+      "name": "Always show\nAuto Nong button",
+      "description": "\nAlways show the Auto Nong button when entering a level. Even when there are no NONG songs to replace.\nThis is for adding NONG songs to levels that don't have any.",
+      "type": "bool",
+      "default": false
     },
     "_blacklistPPClear": {
       "type": "custom"
