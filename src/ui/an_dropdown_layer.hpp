@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../includes/geode.hpp"
 #include "../types/an_song.hpp"
+#include "an_song_cell.hpp"
+
+class ANSongCell;
 
 class ANDropdownLayer
     : public Popup<int, std::vector<std::shared_ptr<ANSong>>, CustomSongWidget *, int, int, bool> {
@@ -18,8 +20,11 @@ protected:
              CustomSongWidget *parent, int popupNumber, int totalPopups,
              bool isRoptopSong) override;
 
+  void onClose(CCObject *) override;
+
 public:
   Ref<CustomSongWidget> m_parentWidget;
+  std::vector<ANSongCell *> m_songCells;
 
   static ANDropdownLayer *create(int songId, std::vector<std::shared_ptr<ANSong>> songCandidates,
                                  CustomSongWidget *parent, int popupNumber, int totalPopups,
@@ -36,4 +41,5 @@ public:
   }
 
   void onAddNong(CCObject *);
+  void updateCellsButtonsState();
 };

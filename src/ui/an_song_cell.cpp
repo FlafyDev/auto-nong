@@ -1,6 +1,7 @@
 #include "an_song_cell.hpp"
 #include "../types/an_song.hpp"
 #include "../utils/utils.hpp"
+#include "fleym.nongd/include/jukebox.hpp"
 #include "list_cell.hpp"
 
 bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size,
@@ -14,52 +15,48 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   m_isRobtopSong = isRobtopSong;
   m_customSongWidget = parentPopup->m_parentWidget;
 
-  CCMenuItemSpriteExtra *button;
   CCSprite *spr;
   CCMenu *menu;
 
+  auto height = this->getContentSize().height;
+
   // Download button
   spr = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
-  spr->setScale(0.7f);
-  button = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ANSongCell::onDownload));
-  button->setAnchorPoint(ccp(0.5f, 0.5f));
-  button->setID("set-button");
-
+  spr->setScale(0.8f);
+  m_downloadButton =
+      CCMenuItemSpriteExtra::create(spr, this, menu_selector(ANSongCell::onDownload));
+  m_downloadButton->setAnchorPoint(ccp(0.5f, 0.5f));
+  m_downloadButton->setID("set-button");
   menu = CCMenu::create();
-  menu->addChild(button);
-
+  menu->addChild(m_downloadButton);
   menu->setAnchorPoint(ccp(0, 0));
-  menu->setPosition(ccp(295.f, 18.f));
+  menu->setPosition(ccp(295.f, height / 2));
   menu->setID("button-menu1");
   this->addChild(menu);
 
   // Set button
-  spr = ButtonSprite::create("Set");
-  spr->setScale(0.6f);
-  button = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ANSongCell::onSetSong));
-
+  m_setToggle =
+      CCMenuItemToggler::createWithStandardSprites(this, menu_selector(ANSongCell::onSetSong), .6f);
+  m_setToggle->setPositionX(-10.f);
   menu = CCMenu::create();
-  menu->addChild(button);
-
   menu->setAnchorPoint(ccp(0, 0));
-  menu->setPosition(ccp(290.f, 42.f));
+  menu->setPosition(ccp(272.f, height / 2));
   menu->setID("button-menu2");
+  menu->addChild(m_setToggle);
   this->addChild(menu);
 
   // Delete button
   spr = CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
-  spr->setScale(0.65f);
-  button = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ANSongCell::onDeleteSong));
+  spr->setScale(0.74f);
+  m_trashButton = CCMenuItemSpriteExtra::create(spr, this, menu_selector(ANSongCell::onDeleteSong));
   menu = CCMenu::create();
-  menu->addChild(button);
-
   menu->setAnchorPoint(ccp(0, 0));
-  menu->setPosition(ccp(265.f, 18.f));
+  menu->setPosition(ccp(295.f, height / 2));
   menu->setID("button-menu2");
+  menu->addChild(m_trashButton);
   this->addChild(menu);
-  m_trashButton = button;
 
-  setButtonsVisible();
+  setButtonsState();
 
   m_songInfoLayer = CCLayer::create();
   m_songNameLabel = CCLabelBMFont::create(m_anSong->m_name.c_str(), "bigFont.fnt");
@@ -85,7 +82,7 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   layout->setAutoScale(false);
   layout->setAxisAlignment(AxisAlignment::Center);
   layout->setCrossAxisLineAlignment(AxisAlignment::Start);
-  m_songInfoLayer->setContentSize(ccp(240.f, this->getContentSize().height - 20.f));
+  m_songInfoLayer->setContentSize(ccp(240.f, height - 20.f));
   m_songInfoLayer->setAnchorPoint(ccp(0.f, 0.f));
   m_songInfoLayer->setPosition(ccp(12.f, 1.5f));
   m_songInfoLayer->setLayout(layout);
@@ -94,25 +91,60 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
   return true;
 }
 
-void ANSongCell::onSetSong(CCObject *target) { setSong(); }
+void ANSongCell::onSetSong(CCObject *target) {
+  if (m_setToggle->isToggled() &&
+      jukebox::getActiveNong(m_songId)->path == getFileDownloadPath(false)) {
+    const auto defaultSong = jukebox::getDefaultNong(m_songId);
+    if (defaultSong.has_value()) {
+      jukebox::setActiveNong(defaultSong.value(), m_songId, m_customSongWidget);
+      if (m_parentPopup) {
+        m_parentPopup->updateCellsButtonsState();
+      }
+    }
+  } else {
+    setSong();
+  }
+  // Cancel the toggling of the button that happens after the callback.
+  m_setToggle->toggle(!m_setToggle->isToggled());
+}
 
-void ANSongCell::setButtonsVisible() {
-  m_trashButton->setVisible(fs::exists(getFileDownloadPath(false)));
+void ANSongCell::setButtonsState() {
+  bool downloaded = fs::exists(getFileDownloadPath(false));
+  m_trashButton->setVisible(downloaded);
+  m_downloadButton->setVisible(!downloaded);
+  m_setToggle->setVisible(downloaded);
+  m_setToggle->toggle(jukebox::getActiveNong(m_songId)->path == getFileDownloadPath(false));
 }
 
 void ANSongCell::onDeleteSong(CCObject *target) {
   const fs::path downloadPath = getFileDownloadPath(false);
-  if (!fs::exists(downloadPath)) {
-    Notification::create("File doesn't exist", NotificationIcon::Error)->show();
-    return;
+  const bool isActive = jukebox::getActiveNong(m_songId)->path == getFileDownloadPath(false);
+
+  jukebox::deleteNong(
+      jukebox::SongInfo{
+          .path = downloadPath,
+      },
+      m_songId);
+
+  if (fs::exists(downloadPath)) {
+    fs::remove(downloadPath);
   }
-  fs::remove(downloadPath);
-  setButtonsVisible();
+
+  if (isActive) {
+    const auto defaultSong = jukebox::getDefaultNong(m_songId);
+    if (defaultSong.has_value()) {
+      jukebox::setActiveNong(defaultSong.value(), m_songId, m_customSongWidget);
+    }
+  }
+
+  setButtonsState();
 }
 
 void ANSongCell::setSong() {
   try {
-    setButtonsVisible();
+    if (m_parentPopup) {
+      m_parentPopup->updateCellsButtonsState();
+    }
     fs::path downloadPath = getFileDownloadPath(false);
 
     if (!fs::exists(downloadPath)) {
@@ -129,13 +161,13 @@ void ANSongCell::setSong() {
 
     int jukeboxSongId = m_isRobtopSong ? -m_songId - 1 : m_songId;
     jukebox::addNong(song, jukeboxSongId);
-    jukebox::setActiveSong(song, jukeboxSongId);
-    m_customSongWidget->m_songInfoObject->m_artistName = m_anSong->m_artist;
-    m_customSongWidget->m_songInfoObject->m_songName = m_anSong->m_name;
-    m_customSongWidget->updateSongObject(m_customSongWidget->m_songInfoObject);
+    jukebox::setActiveNong(song, jukeboxSongId, m_customSongWidget);
   } catch (const std::exception &e) {
     log::error("Failed to set song: {}", e.what());
     Notification::create("Failed to set song", NotificationIcon::Error)->show();
+  }
+  if (m_parentPopup) {
+    m_parentPopup->updateCellsButtonsState();
   }
 }
 

@@ -13,13 +13,14 @@ class ANSongCell : public JBListCell {
 protected:
   int m_songId;
   ANSong *m_anSong;
-  ANDropdownLayer *m_parentPopup;
   Ref<CustomSongWidget> m_customSongWidget;
   CCLabelBMFont *m_songNameLabel;
   CCLabelBMFont *m_artistNameLabel;
   CCLabelBMFont *m_sourceLabel;
   CCLayer *m_songInfoLayer;
   CCMenuItemSpriteExtra *m_trashButton;
+  CCMenuItemSpriteExtra *m_downloadButton;
+  CCMenuItemToggler *m_setToggle;
   bool m_currentlyDownloading = false;
   bool m_isRobtopSong = false;
 
@@ -27,9 +28,11 @@ protected:
             bool isRobtopSong);
 
 public:
+  ANDropdownLayer *m_parentPopup;
+
   void downloadFromYtDlp();
   void downloadFromCobalt();
-  void setButtonsVisible();
+  void setButtonsState();
   fs::path getFileDownloadPath(bool create);
   void setSong();
   void onDeleteSong(CCObject *);

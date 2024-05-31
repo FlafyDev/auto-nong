@@ -44,9 +44,12 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   m_mainLayer->addChild(titleLabel);
 
   auto songs = CCArray::create();
+  m_songCells.clear();
 
   for (auto song : m_songCandidates) {
-    songs->addObject(ANSongCell::create(songId, song.get(), this, m_cellSize, isRobtopSong));
+    auto cell = ANSongCell::create(songId, song.get(), this, m_cellSize, isRobtopSong);
+    songs->addObject(cell);
+    m_songCells.push_back(cell);
   }
 
   auto list = ListView::create(songs, m_cellSize.height, m_cellSize.width, 200.f);
@@ -88,4 +91,18 @@ void ANDropdownLayer::onAddNong(CCObject *) {
                   "new?template=add-nong-song.yml&title=Add+Nong+Song&song-id={}",
                   m_songID)
           .c_str());
+}
+
+void ANDropdownLayer::onClose(CCObject *target) {
+  for (auto cell : m_songCells) {
+    cell->m_parentPopup = nullptr;
+  }
+  Popup<int, std::vector<std::shared_ptr<ANSong>>, CustomSongWidget *, int, int, bool>::onClose(
+      target);
+}
+
+void ANDropdownLayer::updateCellsButtonsState() {
+  for (auto cell : m_songCells) {
+    cell->setButtonsState();
+  }
 }
