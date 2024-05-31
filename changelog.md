@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.2
+###### 31-05-2024
+
+- <cl>Fixed</c> a crash on Editor settings
+
 ## v0.1.1
 ###### 31-05-2024
 

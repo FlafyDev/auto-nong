@@ -15,18 +15,21 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
     for (const auto &pair : m_songs) {
       songIds.insert(pair.first);
     }
-    songIds.insert(m_songInfoObject->m_songID);
+    if (m_songInfoObject != nullptr) {
+      songIds.insert(m_songInfoObject->m_songID);
+    }
     return songIds;
   }
 
   void updateSongInfo() {
     CustomSongWidget::updateSongInfo();
     if (!m_fields->m_showNong) {
-      m_fields->m_showColored = AutoNongManager::get()->anySongExists(getSongIds());
-      m_fields->m_showNong = !m_isMusicLibrary && !m_showPlayMusicBtn &&
-                             GameManager::get()->m_levelEditorLayer == nullptr &&
-                             (Mod::get()->getSettingValue<bool>("always-show-auto-nong-btn") ||
-                              m_fields->m_showColored);
+      bool showAny = !m_isMusicLibrary && !m_showPlayMusicBtn &&
+                     GameManager::get()->m_levelEditorLayer == nullptr;
+      m_fields->m_showColored = showAny && AutoNongManager::get()->anySongExists(getSongIds());
+      m_fields->m_showNong =
+          showAny && (Mod::get()->getSettingValue<bool>("always-show-auto-nong-btn") ||
+                      m_fields->m_showColored);
       if (m_fields->m_showNong) {
         if (m_fields->m_showColored) {
           this->scheduleOnce(schedule_selector(ANCustomSongWidget::showPopup), 0.2);
