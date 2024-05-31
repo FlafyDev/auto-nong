@@ -64,7 +64,8 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   m_songCells.clear();
 
   for (auto song : m_songCandidates) {
-    auto cell = ANSongCell::create(songId, song.get(), this, m_cellSize, isRobtopSong);
+    auto cell = ANSongCell::create(songId, isRobtopSong ? -songId - 1 : songId, song.get(), this,
+                                   m_cellSize, isRobtopSong);
     songs->addObject(cell);
     m_songCells.push_back(cell);
   }

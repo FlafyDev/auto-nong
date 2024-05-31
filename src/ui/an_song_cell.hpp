@@ -12,6 +12,7 @@ class ANDropdownLayer;
 class ANSongCell : public JBListCell {
 protected:
   int m_songId;
+  int m_songJukeboxId;
   ANSong *m_anSong;
   Ref<CustomSongWidget> m_customSongWidget;
   CCLabelBMFont *m_songNameLabel;
@@ -24,8 +25,8 @@ protected:
   bool m_currentlyDownloading = false;
   bool m_isRobtopSong = false;
 
-  bool init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size,
-            bool isRobtopSong);
+  bool init(int songId, int songJukeboxId, ANSong *song, ANDropdownLayer *parentPopup,
+            CCSize const &size, bool isRobtopSong);
 
 public:
   ANDropdownLayer *m_parentPopup;
@@ -38,6 +39,6 @@ public:
   void onDeleteSong(CCObject *);
   void onSetSong(CCObject *);
   void onDownload(CCObject *);
-  static ANSongCell *create(int songId, ANSong *song, ANDropdownLayer *parentPopup,
-                            CCSize const &size, bool isRobtopSong);
+  static ANSongCell *create(int songId, int songJukeboxId, ANSong *song,
+                            ANDropdownLayer *parentPopup, CCSize const &size, bool isRobtopSong);
 };

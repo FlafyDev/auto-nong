@@ -18,7 +18,7 @@ protected:
 
   bool setup(int songId, std::vector<std::shared_ptr<ANSong>> songCandidates,
              CustomSongWidget *parent, int popupNumber, int totalPopups,
-             bool isRoptopSong) override;
+             bool isRobtopSong) override;
 
   void onClose(CCObject *) override;
 

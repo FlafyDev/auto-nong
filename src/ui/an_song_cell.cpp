@@ -4,12 +4,13 @@
 #include "fleym.nongd/include/jukebox.hpp"
 #include "list_cell.hpp"
 
-bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CCSize const &size,
-                      bool isRobtopSong) {
+bool ANSongCell::init(int songId, int songJukeboxId, ANSong *song, ANDropdownLayer *parentPopup,
+                      CCSize const &size, bool isRobtopSong) {
   if (!JBListCell::init(size))
     return false;
 
   m_songId = songId;
+  m_songJukeboxId = songJukeboxId;
   m_anSong = song;
   m_parentPopup = parentPopup;
   m_isRobtopSong = isRobtopSong;
@@ -93,10 +94,10 @@ bool ANSongCell::init(int songId, ANSong *song, ANDropdownLayer *parentPopup, CC
 
 void ANSongCell::onSetSong(CCObject *target) {
   if (m_setToggle->isToggled() &&
-      jukebox::getActiveNong(m_songId)->path == getFileDownloadPath(false)) {
-    const auto defaultSong = jukebox::getDefaultNong(m_songId);
+      jukebox::getActiveNong(m_songJukeboxId)->path == getFileDownloadPath(false)) {
+    const auto defaultSong = jukebox::getDefaultNong(m_songJukeboxId);
     if (defaultSong.has_value()) {
-      jukebox::setActiveNong(defaultSong.value(), m_songId, m_customSongWidget);
+      jukebox::setActiveNong(defaultSong.value(), m_songJukeboxId, m_customSongWidget);
       if (m_parentPopup) {
         m_parentPopup->updateCellsButtonsState();
       }
@@ -113,12 +114,12 @@ void ANSongCell::setButtonsState() {
   m_trashButton->setVisible(downloaded);
   m_downloadButton->setVisible(!downloaded);
   m_setToggle->setVisible(downloaded);
-  m_setToggle->toggle(jukebox::getActiveNong(m_songId)->path == getFileDownloadPath(false));
+  m_setToggle->toggle(jukebox::getActiveNong(m_songJukeboxId)->path == getFileDownloadPath(false));
 }
 
 void ANSongCell::onDeleteSong(CCObject *target) {
   const fs::path downloadPath = getFileDownloadPath(false);
-  const bool isActive = jukebox::getActiveNong(m_songId)->path == getFileDownloadPath(false);
+  const bool isActive = jukebox::getActiveNong(m_songJukeboxId)->path == getFileDownloadPath(false);
 
   jukebox::deleteNong(
       jukebox::SongInfo{
@@ -131,9 +132,9 @@ void ANSongCell::onDeleteSong(CCObject *target) {
   }
 
   if (isActive) {
-    const auto defaultSong = jukebox::getDefaultNong(m_songId);
+    const auto defaultSong = jukebox::getDefaultNong(m_songJukeboxId);
     if (defaultSong.has_value()) {
-      jukebox::setActiveNong(defaultSong.value(), m_songId, m_customSongWidget);
+      jukebox::setActiveNong(defaultSong.value(), m_songJukeboxId, m_customSongWidget);
     }
   }
 
@@ -159,9 +160,8 @@ void ANSongCell::setSong() {
         .songUrl = "local",
     };
 
-    int jukeboxSongId = m_isRobtopSong ? -m_songId - 1 : m_songId;
-    jukebox::addNong(song, jukeboxSongId);
-    jukebox::setActiveNong(song, jukeboxSongId, m_customSongWidget);
+    jukebox::addNong(song, m_songJukeboxId);
+    jukebox::setActiveNong(song, m_songJukeboxId, m_customSongWidget);
   } catch (const std::exception &e) {
     log::error("Failed to set song: {}", e.what());
     Notification::create("Failed to set song", NotificationIcon::Error)->show();
@@ -353,10 +353,11 @@ void ANSongCell::onDownload(CCObject *target) {
   }
 }
 
-ANSongCell *ANSongCell::create(int songId, ANSong *song, ANDropdownLayer *parentPopup,
-                               CCSize const &size, bool isRobtopSong) {
+ANSongCell *ANSongCell::create(int songId, int songJukeboxId, ANSong *song,
+                               ANDropdownLayer *parentPopup, CCSize const &size,
+                               bool isRobtopSong) {
   auto ret = new ANSongCell();
-  if (ret && ret->init(songId, song, parentPopup, size, isRobtopSong)) {
+  if (ret && ret->init(songId, songJukeboxId, song, parentPopup, size, isRobtopSong)) {
     return ret;
   }
   CC_SAFE_DELETE(ret);
