@@ -11,6 +11,8 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   m_totalPopups = totalPopups;
   m_isRobtopSong = isRobtopSong;
 
+  CCMenu *menu;
+
   auto contentSize = m_mainLayer->getContentSize();
 
   auto manifestLabel = CCLabelBMFont::create(
@@ -28,11 +30,26 @@ bool ANDropdownLayer::setup(int songId, std::vector<std::shared_ptr<ANSong>> son
   addNongBtn->setPosition(contentSize.width - 26.f, 28.f);
   addNongBtn->setID("add-nong-btn");
 
-  auto menu = CCMenu::create();
+  menu = CCMenu::create();
   menu->setAnchorPoint(ccp(0, 0));
   menu->setPosition(ccp(0, 0));
   menu->setID("button-menu2");
   menu->addChild(addNongBtn);
+  menu->setZOrder(2);
+  m_mainLayer->addChild(menu);
+
+  auto optionsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+  optionsSpr->setScale(.8f);
+  auto openOptionsBtn = CCMenuItemSpriteExtra::create(
+      optionsSpr, this, menu_selector(ANDropdownLayer::onOpenOptions));
+  openOptionsBtn->setPosition(26.f, 28.f);
+  openOptionsBtn->setID("open-options-btn");
+
+  menu = CCMenu::create();
+  menu->setAnchorPoint(ccp(0, 0));
+  menu->setPosition(ccp(0, 0));
+  menu->setID("button-menu3");
+  menu->addChild(openOptionsBtn);
   menu->setZOrder(2);
   m_mainLayer->addChild(menu);
 
@@ -92,6 +109,8 @@ void ANDropdownLayer::onAddNong(CCObject *) {
                   m_songID)
           .c_str());
 }
+
+void ANDropdownLayer::onOpenOptions(CCObject *) { geode::openSettingsPopup(Mod::get()); }
 
 void ANDropdownLayer::onClose(CCObject *target) {
   for (auto cell : m_songCells) {

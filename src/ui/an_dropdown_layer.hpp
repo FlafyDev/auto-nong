@@ -41,5 +41,6 @@ public:
   }
 
   void onAddNong(CCObject *);
+  void onOpenOptions(CCObject *);
   void updateCellsButtonsState();
 };
