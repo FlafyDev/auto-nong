@@ -54,17 +54,18 @@ void AutoNongManager::loadIndexes() {
           }
 
           for (const auto &songData : jsonObj.value().as_array()) {
-            std::string name = songData["name"].as_string();
-            std::string artist = songData.contains("artist") ? songData["artist"].as_string() : "";
-            std::string source = songData["source"].as_string();
+            const std::string name = songData["name"].as_string();
+            const std::string artist = songData.contains("artist") ? songData["artist"].as_string() : "";
+            const std::string source = songData["source"].as_string();
+            const int startOffsetMS = songData.contains("startOffset") ? songData["startOffset"].as_int() : 0;
 
             std::shared_ptr<ANSong> song;
             if (source == "youtube") {
               std::string yt_id = songData["yt-id"].as_string();
-              song = std::make_shared<ANYTSong>(name, artist, index, yt_id);
+              song = std::make_shared<ANYTSong>(name, artist, index, startOffsetMS, yt_id);
             } else if (source == "host") {
               std::string url = songData["url"].as_string();
-              song = std::make_shared<ANHostSong>(name, artist, index, url);
+              song = std::make_shared<ANHostSong>(name, artist, index, startOffsetMS, url);
             } else {
               log::warn("Unsupported source: {}", source);
               continue;

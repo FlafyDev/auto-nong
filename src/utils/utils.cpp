@@ -3,6 +3,10 @@
 #include "../includes/geode.hpp"
 #include <matjson.hpp>
 #include <sstream>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 std::vector<std::string> splitString(const std::string &str, char delimiter) {
   std::vector<std::string> tokens;
