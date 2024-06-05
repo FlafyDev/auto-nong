@@ -158,6 +158,7 @@ void ANSongCell::setSong() {
         .songName = m_anSong->m_name,
         .authorName = m_anSong->m_artist,
         .songUrl = "local",
+        .startOffset = 0,
     };
 
     jukebox::addNong(song, m_songJukeboxId);
