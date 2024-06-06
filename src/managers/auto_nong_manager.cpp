@@ -3,8 +3,9 @@
 
 std::vector<std::shared_ptr<ANSong>> AutoNongManager::getNongsFromSongID(int songID) {
   if (m_songIDToNongs.find(songID) == m_songIDToNongs.end()) {
-    return std::vector<std::shared_ptr<ANSong>>{};
+    return {};
   }
+
   return m_songIDToNongs[songID];
 }
 
@@ -17,13 +18,46 @@ bool AutoNongManager::anySongExists(std::set<int> songIDs) {
   return false;
 }
 
+void AutoNongManager::reloadLocalIndex() {
+  for (auto &pair : m_songIDToNongs) {
+    auto &songs = pair.second;
+    songs.erase(std::remove_if(
+                    songs.begin(), songs.end(),
+                    [](const std::shared_ptr<ANSong> &song) { return song->m_index == "local"; }),
+                songs.end());
+  }
+
+  auto localIndex = Mod::get()->getSavedValue<std::vector<ANSong *>>("local-index");
+
+  log::info("Reloading local index with {} songs", localIndex.size());
+  loadIndex(localIndex, "local");
+}
+
+void AutoNongManager::removeSongFromLocalIndex(ANSong *song) {
+  auto localIndex = Mod::get()->getSavedValue<matjson::Array>("local-index", {});
+  localIndex.erase(std::remove_if(localIndex.begin(), localIndex.end(),
+                                  [song](const matjson::Value &value) {
+                                    return matjson::Serialize<ANSong *>::to_json(song) == value;
+                                  }),
+                   localIndex.end());
+  Mod::get()->setSavedValue<matjson::Array>("local-index", localIndex);
+  reloadLocalIndex();
+}
+
+void AutoNongManager::addSongToLocalIndex(ANSong *song) {
+  auto localIndex = Mod::get()->getSavedValue<matjson::Array>("local-index", {});
+  localIndex.push_back(matjson::Serialize<ANSong *>::to_json(song));
+  Mod::get()->setSavedValue<matjson::Array>("local-index", localIndex);
+  reloadLocalIndex();
+}
+
 void AutoNongManager::loadIndexesSchedule(float) { loadIndexes(); }
 
 void AutoNongManager::loadIndexes() {
   std::vector<std::string> indexes =
       Mod::get()->getSettingValue<MultiStringSettingStruct>("indexes").m_strings;
 
-  m_songIDToNongs = {};
+  reloadLocalIndex();
 
   for (std::string index : indexes) {
     if (index.size() < 5)
@@ -53,35 +87,22 @@ void AutoNongManager::loadIndexes() {
             return;
           }
 
-          for (const auto &songData : jsonObj.value().as_array()) {
-            const std::string name = songData["name"].as_string();
-            const std::string artist = songData.contains("artist") ? songData["artist"].as_string() : "";
-            const std::string source = songData["source"].as_string();
-            const int startOffsetMS = songData.contains("startOffset") ? songData["startOffset"].as_int() : 0;
+          auto vectors = matjson::Serialize<std::vector<ANSong *>>::from_json(jsonObj.value());
 
-            std::shared_ptr<ANSong> song;
-            if (source == "youtube") {
-              std::string yt_id = songData["yt-id"].as_string();
-              song = std::make_shared<ANYTSong>(name, artist, index, startOffsetMS, yt_id);
-            } else if (source == "host") {
-              std::string url = songData["url"].as_string();
-              song = std::make_shared<ANHostSong>(name, artist, index, startOffsetMS, url);
-            } else {
-              log::warn("Unsupported source: {}", source);
-              continue;
-            }
-
-            if (songData.contains("songs")) {
-              for (matjson::Value songID : songData["songs"].as_array()) {
-                m_songIDToNongs[songID.as_int()].push_back(song);
-              }
-            }
-          }
-          Loader::get()->queueInMainThread(
-              [this, index]() { log::info("Loaded index: {}", index); });
+          this->loadIndex(vectors, index);
         })
         .send();
   }
+}
+
+void AutoNongManager::loadIndex(const std::vector<ANSong *> &indexJson, const std::string &index) {
+  for (ANSong *song : indexJson) {
+    for (const int songID : song->m_songIDs) {
+      song->m_index = index;
+      m_songIDToNongs[songID].push_back(std::shared_ptr<ANSong>(song));
+    }
+  }
+  Loader::get()->queueInMainThread([this, index]() { log::info("Loaded index: {}", index); });
 }
 
 void AutoNongManager::setCurrentLevelID(int levelID) { m_currentLevelID = levelID; }

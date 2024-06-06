@@ -21,9 +21,13 @@ public:
   std::vector<std::shared_ptr<ANSong>> getNongsFromSongID(int songID);
   bool anySongExists(std::set<int> songIDs);
   void loadIndexes();
+  void loadIndex(const std::vector<ANSong *> &indexJson, const std::string &index);
   int getCurrentLevelID();
   void setCurrentLevelID(int levelID);
   void loadIndexesSchedule(float);
+  void removeSongFromLocalIndex(ANSong *song);
+  void addSongToLocalIndex(ANSong *song);
+  void reloadLocalIndex();
 
   static AutoNongManager *get() {
     if (m_instance == nullptr) {

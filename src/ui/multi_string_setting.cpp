@@ -78,8 +78,7 @@ protected:
       auto inputNode = TextInput::create(103.f, "Index url", "chatFont.fnt");
       inputNode->setScale(1.f);
       inputNode->setPosition(size2.width / 2 - 15.f, size2.height / 2);
-      inputNode->setFilter(
-          "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$&'()*+,;=");
+      inputNode->setCommonFilter(CommonFilter::Any);
       inputNode->setMaxCharCount(300);
       inputNode->setWidth(size2.width - 60.f);
       inputNode->setString(m_localValue[i], false);

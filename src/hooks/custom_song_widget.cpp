@@ -89,8 +89,7 @@ struct ANCustomSongWidget : geode::Modify<ANCustomSongWidget, CustomSongWidget> 
   void onNongBtn(CCObject *) {
     for (int songId : getSongIds()) {
       auto anSongs = AutoNongManager::get()->getNongsFromSongID(songId);
-      auto layer = ANDropdownLayer::create(
-          songId, AutoNongManager::get()->getNongsFromSongID(songId), this, 1, 1, m_isRobtopSong);
+      auto layer = ANDropdownLayer::create(songId, this, 1, 1, m_isRobtopSong);
       layer->m_noElasticity = true;
       layer->setZOrder(106);
       layer->show();

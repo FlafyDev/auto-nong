@@ -1,11 +1,12 @@
 #include "an_song_cell.hpp"
 #include "../types/an_song.hpp"
 #include "../utils/utils.hpp"
+#include "an_add_local_popup.hpp"
 #include "fleym.nongd/include/jukebox.hpp"
 #include "list_cell.hpp"
 
-bool ANSongCell::init(int songId, int songJukeboxId, ANSong *song, ANDropdownLayer *parentPopup,
-                      CCSize const &size, bool isRobtopSong) {
+bool ANSongCell::init(int songId, int songJukeboxId, std::shared_ptr<ANSong> song,
+                      ANDropdownLayer *parentPopup, CCSize const &size, bool isRobtopSong) {
   if (!JBListCell::init(size))
     return false;
 
@@ -20,6 +21,7 @@ bool ANSongCell::init(int songId, int songJukeboxId, ANSong *song, ANDropdownLay
   CCMenu *menu;
 
   auto height = this->getContentSize().height;
+  auto contentSize = this->getContentSize();
 
   // Download button
   spr = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
@@ -57,6 +59,22 @@ bool ANSongCell::init(int songId, int songJukeboxId, ANSong *song, ANDropdownLay
   menu->addChild(m_trashButton);
   this->addChild(menu);
 
+  // Edit button
+  if (song->m_index == "local") {
+    auto editSpr = CCSprite::createWithSpriteFrameName("GJ_editBtn_001.png");
+    editSpr->setScale(.3f);
+    auto editBtn =
+        CCMenuItemSpriteExtra::create(editSpr, this, menu_selector(ANSongCell::onEditSong));
+    editBtn->setID("edit-btn");
+    menu = CCMenu::create();
+    menu->setAnchorPoint(ccp(0, 0));
+    menu->setPosition(ccp(17.f, height / 2));
+    menu->setID("button-menu3");
+    menu->addChild(editBtn);
+    menu->setZOrder(2);
+    this->addChild(menu);
+  }
+
   setButtonsState();
 
   m_songInfoLayer = CCLayer::create();
@@ -72,7 +90,7 @@ bool ANSongCell::init(int songId, int songJukeboxId, ANSong *song, ANDropdownLay
       fmt::format("{} : {}", getSubstringAfterSlash(m_anSong->m_index), m_anSong->getSource())
           .c_str(),
       "goldFont.fnt");
-  m_sourceLabel->limitLabelWidth(120.f, 0.7f, 0.1f);
+  m_sourceLabel->limitLabelWidth(120.f, 0.5f, 0.1f);
   m_sourceLabel->setID("artist-name");
 
   m_songInfoLayer->addChild(m_sourceLabel);
@@ -85,7 +103,7 @@ bool ANSongCell::init(int songId, int songJukeboxId, ANSong *song, ANDropdownLay
   layout->setCrossAxisLineAlignment(AxisAlignment::Start);
   m_songInfoLayer->setContentSize(ccp(240.f, height - 20.f));
   m_songInfoLayer->setAnchorPoint(ccp(0.f, 0.f));
-  m_songInfoLayer->setPosition(ccp(12.f, 1.5f));
+  m_songInfoLayer->setPosition(ccp(12.f + (song->m_index == "local" ? 20.f : 0.f), 1.5f));
   m_songInfoLayer->setLayout(layout);
 
   this->addChild(m_songInfoLayer);
@@ -114,7 +132,13 @@ void ANSongCell::setButtonsState() {
   m_trashButton->setVisible(downloaded);
   m_downloadButton->setVisible(!downloaded);
   m_setToggle->setVisible(downloaded);
-  m_setToggle->toggle(jukebox::getActiveNong(m_songJukeboxId)->path == getFileDownloadPath(false));
+  auto activeNong = jukebox::getActiveNong(m_songJukeboxId);
+  m_setToggle->toggle(activeNong ? compareWithJBSong(activeNong.value()) : false);
+}
+
+bool ANSongCell::compareWithJBSong(const jukebox::SongInfo &song) {
+  return song.songName == m_anSong->m_name && song.authorName == m_anSong->m_artist &&
+         song.path == getFileDownloadPath(false) && song.startOffset == m_anSong->m_startOffsetMS;
 }
 
 void ANSongCell::onDeleteSong(CCObject *target) {
@@ -124,6 +148,9 @@ void ANSongCell::onDeleteSong(CCObject *target) {
   jukebox::deleteNong(
       jukebox::SongInfo{
           .path = downloadPath,
+          .songName = m_anSong->m_name,
+          .authorName = m_anSong->m_artist,
+          .startOffset = m_anSong->m_startOffsetMS,
       },
       m_songId);
 
@@ -139,6 +166,10 @@ void ANSongCell::onDeleteSong(CCObject *target) {
   }
 
   setButtonsState();
+}
+
+void ANSongCell::onEditSong(CCObject *target) {
+  ANAddLocalPopup::create(m_parentPopup, m_anSong)->show();
 }
 
 void ANSongCell::setSong() {
@@ -158,9 +189,10 @@ void ANSongCell::setSong() {
         .songName = m_anSong->m_name,
         .authorName = m_anSong->m_artist,
         .songUrl = "local",
-        .startOffset = 0,
+        .startOffset = m_anSong->m_startOffsetMS,
     };
 
+    jukebox::deleteNong(song, m_songJukeboxId);
     jukebox::addNong(song, m_songJukeboxId);
     jukebox::setActiveNong(song, m_songJukeboxId, m_customSongWidget);
   } catch (const std::exception &e) {
@@ -186,7 +218,7 @@ fs::path ANSongCell::getFileDownloadPath(bool create) {
 
 void ANSongCell::downloadFromYtDlp() {
   m_currentlyDownloading = true;
-  const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong);
+  const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong.get());
   const fs::path ytDlpPath = Mod::get()->getSettingValue<std::string>("yt-dlp-path");
   const std::string videoId = ytSong->m_ytId;
   const fs::path downloadPath = getFileDownloadPath(true);
@@ -235,7 +267,7 @@ void ANSongCell::downloadFromYtDlp() {
 void ANSongCell::downloadFromCobalt() {
   m_currentlyDownloading = true;
   const std::string apiUrl = "https://co.wuk.sh/api/json";
-  const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong);
+  const ANYTSong *ytSong = static_cast<ANYTSong *>(m_anSong.get());
   const std::string videoId = ytSong->m_ytId;
 
   std::unordered_map<std::string, std::string> parameters = {
@@ -312,7 +344,7 @@ void ANSongCell::onDownload(CCObject *target) {
     return;
   }
 
-  if (typeid(*m_anSong) == typeid(ANYTSong)) {
+  if (m_anSong->getSource() == "youtube") {
     if (Mod::get()->getSettingValue<bool>("use-cobalt")) {
       downloadFromCobalt();
     } else if (Mod::get()->getSettingValue<bool>("use-yt-dlp")) {
@@ -320,8 +352,8 @@ void ANSongCell::onDownload(CCObject *target) {
     } else {
       Notification::create("No download method for YouTube", NotificationIcon::Error)->show();
     }
-  } else if (typeid(*m_anSong) == typeid(ANHostSong)) {
-    const ANHostSong *hostSong = static_cast<ANHostSong *>(m_anSong);
+  } else if (m_anSong->getSource() == "host") {
+    const ANHostSong *hostSong = static_cast<ANHostSong *>(m_anSong.get());
     const fs::path downloadPath = getFileDownloadPath(true);
     m_currentlyDownloading = true;
     Notification::create("Downloading from URL", NotificationIcon::Loading)->show();
@@ -345,7 +377,7 @@ void ANSongCell::onDownload(CCObject *target) {
   }
 }
 
-ANSongCell *ANSongCell::create(int songId, int songJukeboxId, ANSong *song,
+ANSongCell *ANSongCell::create(int songId, int songJukeboxId, std::shared_ptr<ANSong> song,
                                ANDropdownLayer *parentPopup, CCSize const &size,
                                bool isRobtopSong) {
   auto ret = new ANSongCell();
