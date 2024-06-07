@@ -192,7 +192,7 @@ void ANSongCell::setSong() {
         .startOffset = m_anSong->m_startOffsetMS,
     };
 
-    jukebox::deleteNong(song, m_songJukeboxId);
+    jukebox::deleteNong(song, m_songJukeboxId, false);
     jukebox::addNong(song, m_songJukeboxId);
     jukebox::setActiveNong(song, m_songJukeboxId, m_customSongWidget);
   } catch (const std::exception &e) {
