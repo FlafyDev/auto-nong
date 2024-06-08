@@ -130,9 +130,7 @@ void ANDropdownLayer::updateCells() {
   m_mainLayer->addChild(m_listView);
 }
 
-void ANDropdownLayer::onAddNong(CCObject *) {
-  ANAddLocalPopup::create(this, std::nullopt)->show();
-}
+void ANDropdownLayer::onAddNong(CCObject *) { ANAddLocalPopup::create(this, std::nullopt)->show(); }
 
 void ANDropdownLayer::onOpenOptions(CCObject *) { geode::openSettingsPopup(Mod::get()); }
 
