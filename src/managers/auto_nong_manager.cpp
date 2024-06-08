@@ -1,4 +1,5 @@
 #include "auto_nong_manager.hpp"
+#include "Geode/cocos/platform/CCPlatformMacros.h"
 #include <matjson.hpp>
 
 void AutoNongManager::registerDropdownLayer(ANDropdownLayer *layer) { m_dropdownLayer = layer; }
@@ -72,9 +73,123 @@ fs::path AutoNongManager::getSongPath(const ANSong &song, bool create) {
   return baseDir / filename;
 }
 
-// ANDownloadTask AutoNongManager::createCobaltDownload(std::shared_ptr<ANSong> song) {}
-//
-// ANDownloadTask AutoNongManager::createYtDlpDownload(std::shared_ptr<ANSong> song) {}
+void AutoNongManager::createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::path path,
+                                           std::optional<int> songJukeboxId) {
+  if (m_cobaltMetadataListeners.find(path) != m_cobaltMetadataListeners.end()) {
+    m_cobaltMetadataListeners.erase(path);
+  }
+  const std::string apiUrl = "https://co.wuk.sh/api/json";
+  const std::string videoId = song->m_ytId;
+
+  std::unordered_map<std::string, std::string> parameters = {
+      {"url", fmt::format("https://www.youtube.com/watch?v={}", videoId)},
+      {"aFormat", "mp3"},
+      {"isAudioOnly", "true"}};
+
+  matjson::Value parameters_json = matjson::Object();
+  for (auto const &[key, value] : parameters) {
+    parameters_json[key] = value;
+  }
+
+  m_cobaltMetadataListeners.emplace(path, EventListener<ANCobaltMetadataTask>());
+
+  ANCobaltMetadataTask metadataTask =
+      web::WebRequest()
+          .bodyJSON(parameters_json)
+          .header("Accept", "application/json")
+          .header("Content-Type", "application/json")
+          .post(apiUrl)
+          .map(
+              [](web::WebResponse *response) -> ANCobaltMetadataTask::Value {
+                if (response->ok() && response->string().isOk()) {
+                  std::string error;
+                  std::optional<matjson::Value> jsonObj =
+                      matjson::parse(response->string().value(), error);
+
+                  if (!jsonObj.has_value()) {
+                    return Err(error);
+                  }
+
+                  return Ok(jsonObj.value());
+                }
+                return Err("Failed to fetch");
+              },
+              [](web::WebProgress *progress) -> ANCobaltMetadataTask::Progress {
+                return progress->downloadProgress().value_or(0);
+              });
+
+  m_cobaltMetadataListeners[path].bind([this, song, path,
+                                        songJukeboxId](ANCobaltMetadataTask::Event *event) {
+    if (ANCobaltMetadataTask::Value *result = event->getValue()) {
+      m_cobaltMetadataListeners.erase(path);
+
+      if (result->isErr()) {
+        Notification::create(fmt::format("Cobalt metadata failed: {}", result->err()),
+                             NotificationIcon::Error)
+            ->show();
+        return;
+      }
+
+      if (result->value()["status"] != "stream") {
+        Notification::create("Cobalt metadata failed: Incorrect result", NotificationIcon::Error)
+            ->show();
+        return;
+      }
+
+      std::string audio_url = result->value()["url"].as_string();
+
+      ANDownloadSongTask task = web::WebRequest().get(audio_url).map(
+          [](web::WebResponse *response) -> ANDownloadSongTask::Value {
+            if (response->ok()) {
+              return Ok(response->data());
+            }
+            return Err("Failed to fetch");
+          },
+          [](web::WebProgress *progress) -> ANDownloadSongTask::Progress {
+            return progress->downloadProgress().value_or(0);
+          });
+
+      registerDownloadTask(task, song, path, songJukeboxId);
+    } else if (float *progress = event->getProgress()) {
+
+    } else if (event->isCancelled()) {
+      m_cobaltMetadataListeners.erase(path);
+    }
+  });
+
+  m_cobaltMetadataListeners[path].setFilter(metadataTask);
+}
+
+// TODO: handle android
+void AutoNongManager::createYtDlpDownload(std::shared_ptr<ANYTSong> song, fs::path path,
+                                          std::optional<int> songJukeboxId) {
+  ANDownloadSongTask task = ANDownloadSongTask::runWithCallback(
+      [this, song, path](auto postResult, auto postProgress, auto hasBeenCancelled) {
+        const fs::path ytDlpPath = Mod::get()->getSettingValue<std::string>("yt-dlp-path");
+
+        if (!fs::exists(ytDlpPath)) {
+          postResult(Err("yt-dlp.exe not found at specified path"));
+          return;
+        }
+
+        std::string command = fmt::format("\"{}\" -x --audio-format mp3 \"{}\" -o \"{}\"",
+                                          ytDlpPath, song->m_ytId, path);
+
+        int result = std::system(fmt::format("\"{}\"", command).c_str());
+
+        log::info("command({}): {}", result, command);
+
+        if (result != 0) {
+          log::info("Failed to execute command({}): {}", result, command);
+          postResult(Err("Failed to execute command"));
+          return;
+        }
+
+        postResult(Ok(std::nullopt));
+      });
+
+  registerDownloadTask(task, song, path, songJukeboxId);
+}
 
 void AutoNongManager::createHostDownload(std::shared_ptr<ANHostSong> song, fs::path savePath,
                                          std::optional<int> songJukeboxId) {
@@ -106,12 +221,18 @@ void AutoNongManager::registerDownloadTask(ANDownloadSongTask task, std::shared_
     if (ANDownloadSongTask::Value *result = event->getValue()) {
       m_downloadListeners.erase(path);
       if (result->isErr()) {
+        Notification::create(fmt::format("Song download failed: {}", result->err()),
+                             NotificationIcon::Error)
+            ->show();
         return;
       }
 
-      std::ofstream file(path, std::ios::out | std::ios::binary);
-      file.write(reinterpret_cast<const char *>(result->value().data()), result->value().size());
-      file.close();
+      if (result->value().has_value()) {
+        std::ofstream file(path, std::ios::out | std::ios::binary);
+        file.write(reinterpret_cast<const char *>(result->value().value().data()),
+                   result->value().value().size());
+        file.close();
+      }
 
       if (songJukeboxId.has_value()) {
         AutoNongManager::get()->setSong(*song, songJukeboxId.value());
@@ -119,12 +240,15 @@ void AutoNongManager::registerDownloadTask(ANDownloadSongTask task, std::shared_
       if (m_dropdownLayer.has_value()) {
         m_dropdownLayer.value()->updateCellsButtonsState();
       }
+      Notification::create(fmt::format("Downloaded {}", song->m_name), NotificationIcon::Success)
+          ->show();
     } else if (float *progress = event->getProgress()) {
 
     } else if (event->isCancelled()) {
       m_downloadListeners.erase(path);
     }
   });
+
   m_downloadListeners[path].setFilter(task);
 }
 
@@ -213,7 +337,7 @@ void AutoNongManager::setSong(const ANSong &song, int songJukeboxId) {
     jukebox::setActiveNong(jbSong, songJukeboxId, getCustomSongWidget());
   } catch (const std::exception &e) {
     log::error("Failed to set song: {}", e.what());
-    Notification::create("Failed to set song", NotificationIcon::Error)->show();
+    Notification::create("Failed to set song: {}", NotificationIcon::Error)->show();
   }
   if (m_dropdownLayer.has_value()) {
     m_dropdownLayer.value()->updateCellsButtonsState();
@@ -221,6 +345,7 @@ void AutoNongManager::setSong(const ANSong &song, int songJukeboxId) {
 }
 
 void AutoNongManager::downloadSong(std::shared_ptr<ANSong> song, std::optional<int> songJukeboxId) {
+  Notification::create("Downloading...", NotificationIcon::None)->show();
   const auto songPath = getSongPath(*song, true);
 
   if (fs::exists(songPath)) {
@@ -228,18 +353,17 @@ void AutoNongManager::downloadSong(std::shared_ptr<ANSong> song, std::optional<i
   }
 
   if (song->getSource() == "youtube") {
-    // TODO: youtube download methods
-    // if (Mod::get()->getSettingValue<bool>("use-cobalt")) {
-    //   downloadFromCobalt();
-    // } else if (Mod::get()->getSettingValue<bool>("use-yt-dlp")) {
-    //   downloadFromYtDlp();
-    // } else {
-    //   Notification::create("No download method for YouTube", NotificationIcon::Error)->show();
-    // }
+    if (Mod::get()->getSettingValue<bool>("use-cobalt")) {
+      createCobaltDownload(std::dynamic_pointer_cast<ANYTSong>(song), songPath, songJukeboxId);
+    } else if (Mod::get()->getSettingValue<bool>("use-yt-dlp")) {
+      createYtDlpDownload(std::dynamic_pointer_cast<ANYTSong>(song), songPath, songJukeboxId);
+    } else {
+      Notification::create("No download method for YouTube", NotificationIcon::Error)->show();
+    }
   } else if (song->getSource() == "host") {
-    const ANHostSong *hostSong = static_cast<ANHostSong *>(song.get());
-    std::shared_ptr<ANHostSong> convertedHostSong = std::dynamic_pointer_cast<ANHostSong>(song);
-    createHostDownload(convertedHostSong, songPath, songJukeboxId);
+    createHostDownload(std::dynamic_pointer_cast<ANHostSong>(song), songPath, songJukeboxId);
+  } else {
+    Notification::create("Unknown song source", NotificationIcon::Error)->show();
   }
 }
 
@@ -270,6 +394,9 @@ void AutoNongManager::loadIndexFromURL(const std::string &index) {
     log::info("event for index {}", index);
     if (ANDownloadIndexTask::Value *result = event->getValue()) {
       if (result->isErr()) {
+        Notification::create(fmt::format("Index download failed: {}", result->err()),
+                             NotificationIcon::Error)
+            ->show();
         return;
       }
       this->loadIndex(result->value(), index);

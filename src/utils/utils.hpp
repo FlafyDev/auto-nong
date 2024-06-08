@@ -29,3 +29,7 @@ std::string hashValues(const T &value, const Rest &...rest) {
 std::optional<std::string> youtubeLinkToID(const std::string &link);
 
 std::string replaceAll(std::string str, const std::string &from, const std::string &to);
+
+template <typename T> void eraseByValueFromVector(std::vector<T> &vector, const T &value) {
+  vector.erase(std::remove(vector.begin(), vector.end(), value), vector.end());
+}

@@ -13,8 +13,9 @@ using namespace geode::prelude;
 class ANYTSong;
 class ANHostSong;
 
-using ANDownloadSongTask = Task<Result<ByteVector, std::string>, float>;
+using ANDownloadSongTask = Task<Result<std::optional<ByteVector>, std::string>, float>;
 using ANDownloadIndexTask = Task<Result<ByteVector, std::string>, float>;
+using ANCobaltMetadataTask = Task<Result<matjson::Value, std::string>, float>;
 
 class AutoNongManager : public CCNode {
 protected:
@@ -22,6 +23,8 @@ protected:
   int m_currentLevelID = 0;
   std::map<fs::path, EventListener<ANDownloadSongTask>> m_downloadListeners;
   std::map<std::string, EventListener<ANDownloadIndexTask>> m_indexListeners;
+
+  std::map<fs::path, EventListener<ANCobaltMetadataTask>> m_cobaltMetadataListeners;
   std::map<int, std::vector<std::shared_ptr<ANSong>>> m_songIDToNongs;
   std::optional<ANDropdownLayer *> m_dropdownLayer = std::nullopt;
 
@@ -38,6 +41,12 @@ protected:
                             std::optional<int> songJukeboxId);
   void createHostDownload(std::shared_ptr<ANHostSong> song, fs::path savePath,
                           std::optional<int> songJukeboxId);
+
+  void createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::path path,
+                            std::optional<int> songJukeboxId);
+
+  void createYtDlpDownload(std::shared_ptr<ANYTSong> song, fs::path path,
+                           std::optional<int> songJukeboxId);
 
 public:
   std::vector<std::shared_ptr<ANSong>> getNongsFromSongID(int songID);
