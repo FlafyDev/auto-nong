@@ -27,3 +27,5 @@ std::string hashValues(const T &value, const Rest &...rest) {
 }
 
 std::optional<std::string> youtubeLinkToID(const std::string &link);
+
+std::string replaceAll(std::string str, const std::string& from, const std::string& to);

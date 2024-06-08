@@ -11,6 +11,8 @@ bool ANDropdownLayer::setup(int songId, CustomSongWidget *parent, int popupNumbe
   m_totalPopups = totalPopups;
   m_isRobtopSong = isRobtopSong;
 
+  AutoNongManager::get()->registerDropdownLayer(this);
+
   CCMenu *menu;
 
   auto contentSize = m_mainLayer->getContentSize();
@@ -130,16 +132,13 @@ void ANDropdownLayer::updateCells() {
 
 void ANDropdownLayer::onAddNong(CCObject *) {
   ANAddLocalPopup::create(this, std::nullopt)->show();
-  // CCApplication::get()->openURL(
-  //     fmt::format("https://github.com/FlafyDev/auto-nong-indexes/issues/"
-  //                 "new?template=add-nong-song.yml&title=Add+Nong+Song&song-id={}",
-  //                 m_songID)
-  //         .c_str());
 }
 
 void ANDropdownLayer::onOpenOptions(CCObject *) { geode::openSettingsPopup(Mod::get()); }
 
 void ANDropdownLayer::onClose(CCObject *target) {
+  AutoNongManager::get()->unregisterDropdownLayer();
+
   for (auto cell : m_songCells) {
     cell->m_parentPopup = nullptr;
   }

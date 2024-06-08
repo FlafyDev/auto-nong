@@ -21,6 +21,22 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
                           m_mainLayer->getContentSize().height - 10.f);
   m_infoMenu->setLayout(ColumnLayout::create());
 
+  if (indexIndex.has_value()) {
+    auto spr = CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
+    spr->setScale(0.6f);
+    m_deleteButton =
+        CCMenuItemSpriteExtra::create(spr, this, menu_selector(ANAddLocalPopup::deleteSong));
+    m_deleteMenu = CCMenu::create();
+    m_deleteMenu->setID("delete-menu");
+    m_deleteButton->setID("delete-button");
+    m_deleteMenu->addChild(this->m_deleteButton);
+    m_deleteMenu->setContentSize(m_deleteButton->getScaledContentSize());
+    m_deleteMenu->setAnchorPoint({1.0f, 1.0f});
+    m_deleteMenu->setPosition(m_mainLayer->getContentSize().width - 9.f,
+                              m_mainLayer->getContentSize().height - 36.f);
+    m_deleteMenu->setLayout(ColumnLayout::create());
+  }
+
   m_addSongButton =
       CCMenuItemSpriteExtra::create(ButtonSprite::create(indexIndex.has_value() ? "Update" : "Add"),
                                     this, menu_selector(ANAddLocalPopup::addSong));
@@ -40,10 +56,13 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
 
   m_mainLayer->addChild(this->m_infoMenu);
   m_mainLayer->addChild(this->m_addSongMenu);
+  if (indexIndex.has_value()) {
+    m_mainLayer->addChild(this->m_deleteMenu);
+  }
 
   auto inputParent = CCNode::create();
   inputParent->setID("input-parent");
-  auto songInput = TextInput::create(300.f, "Song name*", "bigFont.fnt");
+  auto songInput = TextInput::create(250.f, "Song name*", "bigFont.fnt");
   songInput->setID("song-name-input");
   songInput->setCommonFilter(CommonFilter::Any);
   songInput->getInputNode()->setLabelPlaceholderColor(ccColor3B{108, 153, 216});
@@ -52,7 +71,7 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
   songInput->setString(indexIndex.has_value() ? indexIndex.value()->m_name : "");
   m_songNameInput = songInput;
 
-  auto artistInput = TextInput::create(300.f, "Artist name*", "bigFont.fnt");
+  auto artistInput = TextInput::create(250.f, "Artist name*", "bigFont.fnt");
   artistInput->setID("artist-name-input");
   artistInput->setCommonFilter(CommonFilter::Any);
   artistInput->getInputNode()->setLabelPlaceholderColor(ccColor3B{108, 153, 216});
@@ -61,7 +80,7 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
   artistInput->setString(indexIndex.has_value() ? indexIndex.value()->m_artist : "");
   m_artistNameInput = artistInput;
 
-  auto startOffsetInput = TextInput::create(300.f, "Start offset (ms)", "bigFont.fnt");
+  auto startOffsetInput = TextInput::create(250.f, "Start offset (ms)", "bigFont.fnt");
   startOffsetInput->setID("start-offset-input");
   startOffsetInput->setCommonFilter(CommonFilter::Int);
   startOffsetInput->getInputNode()->setLabelPlaceholderColor(ccColor3B{108, 153, 216});
@@ -69,9 +88,10 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
   startOffsetInput->getInputNode()->setLabelPlaceholderScale(0.7f);
   startOffsetInput->setString(
       indexIndex.has_value() ? std::to_string(indexIndex.value()->m_startOffsetMS) : "");
+  startOffsetInput->setVisible(false); 
   m_startOffsetInput = startOffsetInput;
 
-  auto youtubeLinkInput = TextInput::create(300.f, "Youtube Link", "bigFont.fnt");
+  auto youtubeLinkInput = TextInput::create(250.f, "Youtube Link", "bigFont.fnt");
   youtubeLinkInput->setID("youtube-link-input");
   youtubeLinkInput->setCommonFilter(CommonFilter::Any);
   youtubeLinkInput->getInputNode()->setLabelPlaceholderColor(ccColor3B{108, 153, 216});
@@ -89,7 +109,7 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
   inputParent->addChild(songInput);
   inputParent->addChild(artistInput);
   inputParent->addChild(youtubeLinkInput);
-  inputParent->addChild(startOffsetInput);
+  inputParent->addChild(startOffsetInput); 
 
   auto layout2 = ColumnLayout::create();
   layout2->setAxisReverse(true);
@@ -101,6 +121,11 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
   m_mainLayer->addChild(inputParent);
 
   return true;
+}
+
+void ANAddLocalPopup::deleteSong(CCObject *) {
+  AutoNongManager::get()->removeSongFromLocalIndex(m_indexIndex.value().get());
+  this->m_closeBtn->activate();
 }
 
 void ANAddLocalPopup::showInfo(CCObject *) {
@@ -137,19 +162,6 @@ void ANAddLocalPopup::addSong(CCObject *) {
   auto song = ANYTSong(songName, artistName, "local", {m_parentPopup->m_songID},
                        startOffsetString.empty() ? 0 : std::stoi(startOffsetString), ytId.value());
   AutoNongManager::get()->addSongToLocalIndex(&song);
-  m_parentPopup->updateCells();
 
   this->m_closeBtn->activate();
-  // auto songName = m_songNameInput->getString();
-  // auto artistName = m_artistNameInput->getString();
-  // auto startOffset = m_startOffsetInput->getString();
-  //
-  // auto song = ANSong::create();
-  // song->m_songName = songName;
-  // song->m_artistName = artistName;
-  // song->m_startOffset = startOffset.empty() ? 0 : std::stoi(startOffset);
-  //
-  // m_parentPopup->m_songCandidates.push_back(song);
-  // m_parentPopup->updateCellsButtonsState();
-  // this->removeFromParent();
 }

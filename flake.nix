@@ -26,6 +26,7 @@
         xwin = pkgs.callPackage ./nix/xwin.nix {};
       };
       devShell =
+        builtins.trace (toString pkgs.open-watcom-bin.out)
         (pkgs.buildFHSUserEnv {
           name = "devshell";
           targetPkgs = pkgs: (with pkgs; [
@@ -35,6 +36,7 @@
             llvmPackages_17.clang-unwrapped
             # clang-tools_17
             lld_17
+            open-watcom-bin.out
             llvm_17
             pkg-config
             glibc
@@ -44,18 +46,14 @@
             self.packages.${system}.geode-cli
             self.packages.${system}.xwin
           ]);
-          runScript = let
-            jukeboxBindings = pkgs.fetchFromGitHub {
-              owner = "Fleeym";
-              repo = "sapphire-bindings";
-              rev = "3d4040749c1b96956fc4a460b91abbacc53db75b";
-              hash = "sha256-/UAugKml1iixIQ/JRVTO5Nic8lYV2P87/PregG+/4jQ=";
-            };
-          in pkgs.writeShellScript "fhs-script" ''
+          runScript = pkgs.writeShellScript "fhs-script" ''
             export GEODE_SDK="$HOME/Documents/Geode/"
-            export SPLAT_DIR=$HOME/.cache/geode/splat
-            export TOOLCHAIN=$HOME/.cache/geode/toolchain/clang-cl-msvc.cmake
-            # export GEODE_BINDINGS_REPO_PATH=${jukeboxBindings}
+            export SPLAT_DIR=$HOME/.cache/geode/splat2/splat
+            export WINSDK_VER=10.0.22000
+            export HOST_ARCH=x64
+            export TOOLCHAIN_REPO=$HOME/.cache/geode/toolchain
+            export MSVC_BASE=$SPLAT_DIR/crt
+            export WINSDK_BASE=$SPLAT_DIR/sdk
 
             # export PYTHON3DLL=/home/flafy/Downloads/python3-11.8-nuget/tools/python311.dll
             # export PYTHON3INCLUDES=/home/flafy/Downloads/python3-11.8-nuget/tools/include

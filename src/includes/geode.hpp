@@ -35,6 +35,9 @@
 #include <Geode/ui/TextInput.hpp>
 #include <Geode/utils/cocos.hpp>
 #include <Geode/utils/string.hpp>
+#include <Geode/utils/web.hpp>
+#include <Geode/utils/Task.hpp>
+#include <Geode/loader/Event.hpp>
 #include <fleym.nongd/include/jukebox.hpp>
 #include <matjson.hpp>
 

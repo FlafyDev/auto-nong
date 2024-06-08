@@ -1,11 +1,7 @@
-export HOST_ARCH=x86
-
 cmake \
-  -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-  -DSKIP_BUILDING_CODEGEN=ON \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -B build
+   -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+   -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_REPO/clang-cl-msvc.cmake \
+   -DCMAKE_BUILD_TYPE=RelWithDebInfo -B build \
+   -DGEODE_DISABLE_FMT_CONSTEVAL=1
   
-cmake --build build --config Release
+cmake --build build --config RelWithDebInfo

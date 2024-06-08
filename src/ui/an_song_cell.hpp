@@ -25,6 +25,7 @@ protected:
   CCMenuItemToggler *m_setToggle;
   bool m_currentlyDownloading = false;
   bool m_isRobtopSong = false;
+  fs::path m_songPath;
 
   bool init(int songId, int songJukeboxId, std::shared_ptr<ANSong> song,
             ANDropdownLayer *parentPopup, CCSize const &size, bool isRobtopSong);
@@ -32,16 +33,12 @@ protected:
 public:
   ANDropdownLayer *m_parentPopup;
 
-  void downloadFromYtDlp();
-  void downloadFromCobalt();
   void setButtonsState();
-  fs::path getFileDownloadPath(bool create);
-  void setSong();
   void onDeleteSong(CCObject *);
   void onSetSong(CCObject *);
   void onDownload(CCObject *);
   void onEditSong(CCObject *);
-  bool compareWithJBSong(const jukebox::SongInfo &song);
+  void onPublishSong(CCObject *);
   static ANSongCell *create(int songId, int songJukeboxId, std::shared_ptr<ANSong> song,
                             ANDropdownLayer *parentPopup, CCSize const &size, bool isRobtopSong);
 };
