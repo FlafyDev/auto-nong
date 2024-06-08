@@ -1,14 +1,21 @@
 {
-	"geode": "3.0.0-alpha.1",
-	"gd": {
-		"win": "2.206",
-		"android": "2.205"
-	},
-	"version": "v0.2.0-beta.1",
-	"id": "flafy.autonong",
-	"name": "Auto Nong",
-	"developer": "Flafy",
-	"description": "Automatically download NONG songs for levels",
+  "geode": "3.0.0-alpha.1",
+  "gd": {
+    "win": "2.206",
+    "android": "2.205"
+  },
+  "version": "v0.2.0-beta.1",
+  "id": "flafy.autonong",
+  "name": "Auto Nong",
+  "developer": "Flafy",
+  "description": "Automatically download NONG songs for levels",
+  "repository": "https://github.com/flafydev/auto-nong",
+  "tags": [
+    "music",
+    "online",
+    "utility",
+    "interface"
+  ],
   "dependencies": [
     {
       "id": "fleym.nongd",
