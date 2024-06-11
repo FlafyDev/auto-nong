@@ -17,6 +17,47 @@ using ANDownloadSongTask = Task<Result<std::optional<ByteVector>, std::string>, 
 using ANDownloadIndexTask = Task<Result<ByteVector, std::string>, float>;
 using ANCobaltMetadataTask = Task<Result<matjson::Value, std::string>, float>;
 
+// Utility to create overloaded lambda functions
+// template <class... Ts> struct overloaded : Ts... {
+//   using Ts::operator()...;
+// };
+// template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>; // deduction guide
+
+class ANSongDownloadStatus {
+public:
+  struct NotDownloaded {};
+  struct Downloaded {};
+  struct Failed {
+    std::optional<std::string> error;
+  };
+  struct Downloading {
+    float progress;
+  };
+  struct Active : Downloaded {};
+
+  using Variant = std::variant<NotDownloaded, Downloaded, Failed, Downloading, Active>;
+
+  // template <typename T> bool isStatus() const { return std::holds_alternative<T>(variant); }
+
+  template <typename T> T *getStatus() { return std::get_if<T>(&variant); }
+  template <typename T> bool isStatus() {
+    return std::visit(
+        [](auto &&arg) {
+          using U = std::decay_t<decltype(arg)>;
+          return std::is_base_of_v<T, U>;
+        },
+        variant);
+  }
+
+  Variant variant;
+
+  // ANSongDownloadStatus() : variant() {}
+  ANSongDownloadStatus() : variant(NotDownloaded{}) {}
+  template <typename T> ANSongDownloadStatus(T &&value) : variant(std::forward<T>(value)) {}
+  operator Variant &() { return variant; }
+  operator const Variant &() const { return variant; }
+};
+
 class AutoNongManager : public CCNode {
 protected:
   inline static AutoNongManager *m_instance = nullptr;
@@ -27,6 +68,8 @@ protected:
   std::map<fs::path, EventListener<ANCobaltMetadataTask>> m_cobaltMetadataListeners;
   std::map<int, std::vector<std::shared_ptr<ANSong>>> m_songIDToNongs;
   std::optional<ANDropdownLayer *> m_dropdownLayer = std::nullopt;
+
+  std::map<fs::path, ANSongDownloadStatus> m_downloadTempStatus;
 
   void loadIndexFromURL(const std::string &index);
   void loadIndex(const std::vector<ANSong *> &indexJson, const std::string &index);
@@ -41,12 +84,13 @@ protected:
                             std::optional<int> songJukeboxId);
   void createHostDownload(std::shared_ptr<ANHostSong> song, fs::path savePath,
                           std::optional<int> songJukeboxId);
-
   void createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::path path,
                             std::optional<int> songJukeboxId);
-
   void createYtDlpDownload(std::shared_ptr<ANYTSong> song, fs::path path,
                            std::optional<int> songJukeboxId);
+
+  void setDownloadProgressForSong(const ANSong &song, float progress);
+  void setDownloadErrorForSong(const ANSong &song, const std::string &error);
 
 public:
   std::vector<std::shared_ptr<ANSong>> getNongsFromSongID(int songID);
@@ -71,6 +115,8 @@ public:
   void downloadSong(std::shared_ptr<ANSong> song, std::optional<int> songJukeboxId);
 
   std::optional<std::string> generatePublishUrl(const ANSong &song, int songId);
+
+  ANSongDownloadStatus getSongDownloadStatus(const ANSong &song, std::optional<int> songJukeboxId);
 
   static AutoNongManager *get() {
     if (m_instance == nullptr) {

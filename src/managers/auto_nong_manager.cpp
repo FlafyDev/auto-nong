@@ -43,6 +43,28 @@ void AutoNongManager::unloadIndex(const std::string &index) {
   }
 }
 
+ANSongDownloadStatus AutoNongManager::getSongDownloadStatus(const ANSong &song,
+                                                            std::optional<int> songJukeboxId) {
+  const auto songPath = AutoNongManager::get()->getSongPath(song, false);
+
+  if (fs::exists(songPath)) {
+    m_downloadTempStatus.erase(songPath);
+
+    if (songJukeboxId.has_value() &&
+        AutoNongManager::get()->isSongActiveInJB(song, songJukeboxId.value())) {
+      return ANSongDownloadStatus::Active();
+    }
+    return ANSongDownloadStatus::Downloaded();
+  }
+
+  if (m_downloadTempStatus.contains(songPath)) {
+    return m_downloadTempStatus[songPath];
+  }
+
+  // TODO: check if downloading or failed
+  return ANSongDownloadStatus::NotDownloaded();
+}
+
 void AutoNongManager::removeSongFromLocalIndex(ANSong *song) {
   auto localIndex = Mod::get()->getSavedValue<matjson::Array>("local-index", {});
   localIndex.erase(std::remove_if(localIndex.begin(), localIndex.end(),
@@ -115,7 +137,7 @@ void AutoNongManager::createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::p
                 return Err("Failed to fetch");
               },
               [](web::WebProgress *progress) -> ANCobaltMetadataTask::Progress {
-                return progress->downloadProgress().value_or(0);
+                return progress->downloadProgress().value_or(0) / 100.f * 0.1f; // 0% to 10%
               });
 
   m_cobaltMetadataListeners[path].bind([this, song, path,
@@ -124,15 +146,12 @@ void AutoNongManager::createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::p
       m_cobaltMetadataListeners.erase(path);
 
       if (result->isErr()) {
-        Notification::create(fmt::format("Cobalt metadata failed: {}", result->err()),
-                             NotificationIcon::Error)
-            ->show();
+        setDownloadErrorForSong(*song, fmt::format("Cobalt metadata failed: {}", result->err()));
         return;
       }
 
       if (result->value()["status"] != "stream") {
-        Notification::create("Cobalt metadata failed: Incorrect result", NotificationIcon::Error)
-            ->show();
+        setDownloadErrorForSong(*song, "Cobalt metadata failed: Incorrect result");
         return;
       }
 
@@ -146,13 +165,14 @@ void AutoNongManager::createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::p
             return Err("Failed to fetch");
           },
           [](web::WebProgress *progress) -> ANDownloadSongTask::Progress {
-            return progress->downloadProgress().value_or(0);
+            return progress->downloadProgress().value_or(0) / 100.f * 0.9f + 0.1f; // 10% to 100%
           });
 
       registerDownloadTask(task, song, path, songJukeboxId);
     } else if (float *progress = event->getProgress()) {
-
+      setDownloadProgressForSong(*song, *progress);
     } else if (event->isCancelled()) {
+      setDownloadErrorForSong(*song, "Cobalt metadata failed: Cancelled");
       m_cobaltMetadataListeners.erase(path);
     }
   });
@@ -203,7 +223,7 @@ void AutoNongManager::createHostDownload(std::shared_ptr<ANHostSong> song, fs::p
                                       return Err("Failed to fetch");
                                     },
                                     [](web::WebProgress *progress) -> ANDownloadSongTask::Progress {
-                                      return progress->downloadProgress().value_or(0);
+                                      return progress->downloadProgress().value_or(0) / 100.f;
                                     });
   registerDownloadTask(task, song, savePath, songJukeboxId);
 }
@@ -216,40 +236,53 @@ void AutoNongManager::registerDownloadTask(ANDownloadSongTask task, std::shared_
 
   m_downloadListeners.emplace(path, EventListener<ANDownloadSongTask>());
 
-  m_downloadListeners[path].bind([this, song, path,
-                                  songJukeboxId](ANDownloadSongTask::Event *event) {
-    if (ANDownloadSongTask::Value *result = event->getValue()) {
-      m_downloadListeners.erase(path);
-      if (result->isErr()) {
-        Notification::create(fmt::format("Song download failed: {}", result->err()),
-                             NotificationIcon::Error)
-            ->show();
-        return;
-      }
+  m_downloadListeners[path].bind(
+      [this, song, path, songJukeboxId](ANDownloadSongTask::Event *event) {
+        if (ANDownloadSongTask::Value *result = event->getValue()) {
+          m_downloadListeners.erase(path);
+          if (result->isErr()) {
+            setDownloadErrorForSong(*song, fmt::format("Song download failed: {}", result->err()));
+            return;
+          }
 
-      if (result->value().has_value()) {
-        std::ofstream file(path, std::ios::out | std::ios::binary);
-        file.write(reinterpret_cast<const char *>(result->value().value().data()),
-                   result->value().value().size());
-        file.close();
-      }
+          if (result->value().has_value()) {
+            std::ofstream file(path, std::ios::out | std::ios::binary);
+            file.write(reinterpret_cast<const char *>(result->value().value().data()),
+                       result->value().value().size());
+            file.close();
+          }
 
-      if (songJukeboxId.has_value()) {
-        AutoNongManager::get()->setSong(*song, songJukeboxId.value());
-      }
-      if (m_dropdownLayer.has_value()) {
-        m_dropdownLayer.value()->updateCellsButtonsState();
-      }
-      Notification::create(fmt::format("Downloaded {}", song->m_name), NotificationIcon::Success)
-          ->show();
-    } else if (float *progress = event->getProgress()) {
-
-    } else if (event->isCancelled()) {
-      m_downloadListeners.erase(path);
-    }
-  });
+          if (songJukeboxId.has_value()) {
+            AutoNongManager::get()->setSong(*song, songJukeboxId.value());
+          }
+          if (m_dropdownLayer.has_value()) {
+            m_dropdownLayer.value()->updateCellsButtonsState();
+          }
+          setDownloadErrorForSong(*song, fmt::format("Downloaded {}", song->m_name));
+        } else if (float *progress = event->getProgress()) {
+          setDownloadProgressForSong(*song, *progress);
+        } else if (event->isCancelled()) {
+          setDownloadErrorForSong(*song, fmt::format("Cancelled downloading {}", song->m_name));
+          m_downloadListeners.erase(path);
+        }
+      });
 
   m_downloadListeners[path].setFilter(task);
+}
+
+void AutoNongManager::setDownloadProgressForSong(const ANSong &song, float progress) {
+  m_downloadTempStatus[getSongPath(song)] = ANSongDownloadStatus::Downloading(progress);
+
+  if (m_dropdownLayer.has_value()) {
+    m_dropdownLayer.value()->updateCellsButtonsState();
+  }
+}
+void AutoNongManager::setDownloadErrorForSong(const ANSong &song, const std::string &error) {
+  m_downloadTempStatus[getSongPath(song)] = ANSongDownloadStatus::Failed(error);
+
+  if (m_dropdownLayer.has_value()) {
+    m_dropdownLayer.value()->updateCellsButtonsState();
+  }
 }
 
 bool AutoNongManager::isSongActiveInJB(const ANSong &song, int songJukeboxId) {
@@ -358,12 +391,12 @@ void AutoNongManager::downloadSong(std::shared_ptr<ANSong> song, std::optional<i
     } else if (Mod::get()->getSettingValue<bool>("use-yt-dlp")) {
       createYtDlpDownload(std::dynamic_pointer_cast<ANYTSong>(song), songPath, songJukeboxId);
     } else {
-      Notification::create("No download method for YouTube", NotificationIcon::Error)->show();
+      setDownloadErrorForSong(*song, "No download method for YouTube");
     }
   } else if (song->getSource() == "host") {
     createHostDownload(std::dynamic_pointer_cast<ANHostSong>(song), songPath, songJukeboxId);
   } else {
-    Notification::create("Unknown song source", NotificationIcon::Error)->show();
+    setDownloadErrorForSong(*song, "Unknown song source");
   }
 }
 
@@ -401,7 +434,6 @@ void AutoNongManager::loadIndexFromURL(const std::string &index) {
       }
       this->loadIndex(result->value(), index);
     } else if (float *progress = event->getProgress()) {
-
     } else if (event->isCancelled()) {
       this->m_indexListeners.erase(index);
     }

@@ -22,6 +22,8 @@ protected:
   CCLayer *m_songInfoLayer;
   CCMenuItemSpriteExtra *m_trashButton;
   CCMenuItemSpriteExtra *m_downloadButton;
+  CCProgressTimer *m_progressBar;
+  CCSprite *m_progressBarBack;
   CCMenuItemToggler *m_setToggle;
   bool m_currentlyDownloading = false;
   bool m_isRobtopSong = false;

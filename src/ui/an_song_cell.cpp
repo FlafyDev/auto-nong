@@ -25,6 +25,25 @@ bool ANSongCell::init(int songId, int songJukeboxId, std::shared_ptr<ANSong> son
   auto height = this->getContentSize().height;
   auto contentSize = this->getContentSize();
 
+  // Progress Bar
+  m_progressBarBack = CCSprite::createWithSpriteFrameName("d_circle_01_001.png");
+  m_progressBarBack->setColor(ccc3(50, 50, 50));
+  m_progressBarBack->setPosition(ccp(295.f, height / 2));
+  m_progressBarBack->setScale(0.62f);
+
+  spr = CCSprite::createWithSpriteFrameName("d_circle_01_001.png");
+  spr->setColor(ccc3(0, 255, 0));
+  m_progressBar =
+      CCProgressTimer::create(spr);
+  m_progressBar->setType(CCProgressTimerType::kCCProgressTimerTypeRadial);
+  m_progressBar->setPercentage(50.f);
+  m_progressBar->setID("progress-bar");
+  m_progressBar->setPosition(ccp(295.f, height / 2));
+  m_progressBar->setScale(0.66f);
+
+  this->addChild(m_progressBar);
+  this->addChild(m_progressBarBack);
+
   // Download button
   spr = CCSprite::createWithSpriteFrameName("GJ_downloadBtn_001.png");
   spr->setScale(0.8f);
@@ -137,12 +156,29 @@ void ANSongCell::onSetSong(CCObject *target) {
 }
 
 void ANSongCell::setButtonsState() {
-  bool downloaded = fs::exists(m_songPath);
+  auto status = AutoNongManager::get()->getSongDownloadStatus(*m_anSong, m_songJukeboxId);
+
+  if (auto *d = status.getStatus<ANSongDownloadStatus::Downloading>()) {
+    m_trashButton->setVisible(false);
+    m_downloadButton->setVisible(true);
+    m_setToggle->setVisible(false);
+
+    m_progressBar->setPercentage(d->progress*100.f);
+    m_progressBar->setVisible(true);
+    m_progressBarBack->setVisible(true);
+    m_downloadButton->setColor(ccc3(105, 105, 105));
+    return;
+  }
+
+  m_downloadButton->setColor(ccc3(255, 255, 255));
+  m_progressBar->setVisible(false);
+  m_progressBarBack->setVisible(false);
+
+  const bool downloaded = status.isStatus<ANSongDownloadStatus::Downloaded>();
   m_trashButton->setVisible(downloaded);
   m_downloadButton->setVisible(!downloaded);
   m_setToggle->setVisible(downloaded);
-  auto activeNong = jukebox::getActiveNong(m_songJukeboxId);
-  m_setToggle->toggle(AutoNongManager::get()->isSongActiveInJB(*m_anSong, m_songJukeboxId));
+  m_setToggle->toggle(status.isStatus<ANSongDownloadStatus::Active>());
 }
 
 void ANSongCell::onDeleteSong(CCObject *target) {
