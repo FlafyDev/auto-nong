@@ -1,12 +1,13 @@
 # Changelog
 
 ## v0.2.0
-###### Not released yet
+###### 15-06-2024
 
 - <cg>Added</c> option to create NONGs locally for testing before publishing
-- <co>Upgraded</c> to Geode 3.0.0-alpha.1
-- <co>Upgraded</c> to Jukebox 2.10.0-beta.4
 - <cg>Improved</c> internal code for downloading NONGs
+- <cg>Improved</c> improved downloading UI
+- <co>Upgraded</c> to Geode 3.0.0-beta.1
+- <co>Upgraded</c> to Jukebox v2.10.0
 
 ## v0.1.2
 ###### 31-05-2024

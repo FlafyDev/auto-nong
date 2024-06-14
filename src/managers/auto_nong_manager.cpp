@@ -426,6 +426,7 @@ void AutoNongManager::loadIndexFromURL(const std::string &index) {
   m_indexListeners[index].bind([this, index](ANDownloadIndexTask::Event *event) {
     log::info("event for index {}", index);
     if (ANDownloadIndexTask::Value *result = event->getValue()) {
+      this->m_indexListeners.erase(index);
       if (result->isErr()) {
         Notification::create(fmt::format("Index download failed: {}", result->err()),
                              NotificationIcon::Error)
