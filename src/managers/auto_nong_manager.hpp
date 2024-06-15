@@ -29,9 +29,11 @@ public:
   struct Downloaded {};
   struct Failed {
     std::optional<std::string> error;
+    ~Failed(){};
   };
   struct Downloading {
     float progress;
+    ~Downloading(){};
   };
   struct Active : Downloaded {};
 
