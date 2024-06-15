@@ -365,7 +365,7 @@ void AutoNongManager::setSong(const ANSong &song, int songJukeboxId) {
         // .startOffset = m_anSong->m_startOffsetMS, // TODO(jukebox PR): startOffset
     };
 
-    jukebox::deleteNong(jbSong, songJukeboxId); // TODO(jukebox PR): false
+    jukebox::deleteNong(jbSong, songJukeboxId, false);
     jukebox::addNong(jbSong, songJukeboxId);
     jukebox::setActiveNong(jbSong, songJukeboxId, getCustomSongWidget());
   } catch (const std::exception &e) {
