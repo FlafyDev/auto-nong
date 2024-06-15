@@ -33,8 +33,7 @@ bool ANSongCell::init(int songId, int songJukeboxId, std::shared_ptr<ANSong> son
 
   spr = CCSprite::createWithSpriteFrameName("d_circle_01_001.png");
   spr->setColor(ccc3(0, 255, 0));
-  m_progressBar =
-      CCProgressTimer::create(spr);
+  m_progressBar = CCProgressTimer::create(spr);
   m_progressBar->setType(CCProgressTimerType::kCCProgressTimerTypeRadial);
   m_progressBar->setPercentage(50.f);
   m_progressBar->setID("progress-bar");
@@ -163,7 +162,7 @@ void ANSongCell::setButtonsState() {
     m_downloadButton->setVisible(true);
     m_setToggle->setVisible(false);
 
-    m_progressBar->setPercentage(d->progress*100.f);
+    m_progressBar->setPercentage(d->progress * 100.f);
     m_progressBar->setVisible(true);
     m_progressBarBack->setVisible(true);
     m_downloadButton->setColor(ccc3(105, 105, 105));
