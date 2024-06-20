@@ -5,11 +5,11 @@
 #include "ui/multi_string_setting.hpp"
 
 $on_mod(Loaded) {
-  Mod::get()->addCustomSetting<MultiStringSettingValue>(
-      "indexes", Mod::get()
-                     ->getSettingDefinition("indexes")
-                     ->get<CustomSetting>()
-                     ->json->get<std::vector<std::string>>("default"));
+  // Mod::get()->addCustomSetting<MultiStringSettingValue>(
+  //     "indexes", Mod::get()
+  //                    ->getSettingDefinition("indexes")
+  //                    ->get<CustomSetting>()
+  //                    ->json->get<std::vector<std::string>>("default"));
   Mod::get()->addCustomSetting<ANClearPPBlacklistSettingValue>("_blacklistPPClear", 0);
 
   AutoNongManager::get()->loadIndexes();
@@ -19,6 +19,6 @@ $on_mod(Loaded) {
   //                                  kCCRepeatForever, 0);
 
   // Reload the indexes on change
-  listenForSettingChanges(
-      "indexes", +[](MultiStringSettingStruct value) { AutoNongManager::get()->loadIndexes(); });
+  // listenForSettingChanges(
+  //     "indexes", +[](MultiStringSettingStruct value) { AutoNongManager::get()->loadIndexes(); });
 }
