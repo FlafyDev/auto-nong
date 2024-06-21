@@ -31,6 +31,7 @@
           name = "devshell";
           targetPkgs = pkgs: (with pkgs; [
             cmake
+            libz
             # clang_17
             # clang_17
             llvmPackages_17.clang-unwrapped
@@ -40,7 +41,7 @@
             llvm_17
             pkg-config
             glibc
-            # ninja
+            ninja
             # libgcc.lib
             libgcc
             self.packages.${system}.geode-cli
