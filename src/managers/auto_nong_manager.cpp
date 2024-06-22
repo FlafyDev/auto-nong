@@ -294,9 +294,8 @@ bool AutoNongManager::isSongActiveInJB(const ANSong &song, int songJukeboxId) {
 
   const auto songPath = getSongPath(song, false);
 
-  // TODO(Jukebox PR): startoffset
   return jbSong->songName == song.m_name && jbSong->authorName == song.m_artist &&
-         jbSong->path == songPath;
+         jbSong->path == songPath && jbSong->startOffset == song.m_startOffsetMS;
 }
 
 void AutoNongManager::deleteSong(const ANSong &song, int songJukeboxId) {
@@ -306,8 +305,10 @@ void AutoNongManager::deleteSong(const ANSong &song, int songJukeboxId) {
 
   jukebox::deleteNong(
       jukebox::SongInfo{
-          .path = songPath, .songName = song.m_name, .authorName = song.m_artist,
-          // .startOffset = m_anSong->m_startOffsetMS, // TODO(Jukebox PR): startOffset
+          .path = songPath,
+          .songName = song.m_name,
+          .authorName = song.m_artist,
+          .startOffset = song.m_startOffsetMS,
       },
       songJukeboxId);
 
@@ -361,8 +362,11 @@ void AutoNongManager::setSong(const ANSong &song, int songJukeboxId) {
     }
 
     jukebox::SongInfo jbSong = {
-        .path = songPath, .songName = song.m_name, .authorName = song.m_artist, .songUrl = "local",
-        // .startOffset = m_anSong->m_startOffsetMS, // TODO(jukebox PR): startOffset
+        .path = songPath,
+        .songName = song.m_name,
+        .authorName = song.m_artist,
+        .songUrl = "local",
+        .startOffset = song.m_startOffsetMS,
     };
 
     jukebox::deleteNong(jbSong, songJukeboxId, false);

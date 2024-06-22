@@ -88,7 +88,6 @@ bool ANAddLocalPopup::setup(ANDropdownLayer *parent,
   startOffsetInput->getInputNode()->setLabelPlaceholderScale(0.7f);
   startOffsetInput->setString(
       indexIndex.has_value() ? std::to_string(indexIndex.value()->m_startOffsetMS) : "");
-  startOffsetInput->setVisible(false);
   m_startOffsetInput = startOffsetInput;
 
   auto youtubeLinkInput = TextInput::create(250.f, "Youtube Link", "bigFont.fnt");
