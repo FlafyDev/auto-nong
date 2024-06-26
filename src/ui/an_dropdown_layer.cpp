@@ -158,6 +158,4 @@ void ANDropdownLayer::updateCellsButtonsState() {
   }
 }
 
-void ANDropdownLayer::onShield(CCObject*) {
-  ANShieldPopup::create()->show(); 
-}
+void ANDropdownLayer::onShield(CCObject *) { ANShieldPopup::create()->show(); }

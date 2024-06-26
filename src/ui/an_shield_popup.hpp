@@ -8,11 +8,12 @@ protected:
 
   EventListener<web::WebTask> m_countListener;
   TextArea *m_label = nullptr;
-  CCNode* m_inputParent = nullptr;
+  CCNode *m_inputParent = nullptr;
 
   bool setup() override;
   void onDiscord(CCObject *);
   void setString(std::string count);
+
 public:
   static ANShieldPopup *create() {
     auto ret = new ANShieldPopup;
@@ -25,4 +26,3 @@ public:
     return nullptr;
   }
 };
-

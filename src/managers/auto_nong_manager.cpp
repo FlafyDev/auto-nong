@@ -507,7 +507,8 @@ std::optional<std::string> AutoNongManager::generatePublishUrl(const ANSong &son
     return fmt::format("https://github.com/FlafyDev/auto-nong-indexes/issues/"
                        "new?template=add-nong-song.yml&title={}&song-name={}&artist-name={}&"
                        "youtube-link={}&start-offset={}&song-id={}&extra={}",
-                       title, song.m_name, song.m_artist, ytSong->m_ytId, ytSong->m_startOffsetMS, songId, extraEncoded);
+                       title, song.m_name, song.m_artist, ytSong->m_ytId, ytSong->m_startOffsetMS,
+                       songId, extraEncoded);
   }
   return std::nullopt;
 }
