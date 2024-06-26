@@ -41,4 +41,5 @@ public:
   void updateCells();
   void onOpenOptions(CCObject *);
   void updateCellsButtonsState();
+  void onShield(CCObject *);
 };

@@ -1,6 +1,7 @@
 #include "an_dropdown_layer.hpp"
 #include "../managers/auto_nong_manager.hpp"
 #include "an_add_local_popup.hpp"
+#include "an_shield_popup.hpp"
 #include "an_song_cell.hpp"
 
 bool ANDropdownLayer::setup(int songId, CustomSongWidget *parent, int popupNumber, int totalPopups,
@@ -32,11 +33,19 @@ bool ANDropdownLayer::setup(int songId, CustomSongWidget *parent, int popupNumbe
   addNongBtn->setPosition(contentSize.width - 26.f, 28.f);
   addNongBtn->setID("add-nong-btn");
 
+  auto modBtnSpr = CCSprite::create("mod_btn.png"_spr);
+  modBtnSpr->setScale(.8f);
+  auto modBtn =
+      CCMenuItemSpriteExtra::create(modBtnSpr, this, menu_selector(ANDropdownLayer::onShield));
+  modBtn->setPosition(contentSize.width - 26.f, 70.f);
+  modBtn->setID("mod-btn");
+
   menu = CCMenu::create();
   menu->setAnchorPoint(ccp(0, 0));
   menu->setPosition(ccp(0, 0));
   menu->setID("button-menu2");
   menu->addChild(addNongBtn);
+  menu->addChild(modBtn);
   menu->setZOrder(2);
   m_mainLayer->addChild(menu);
 
@@ -147,4 +156,8 @@ void ANDropdownLayer::updateCellsButtonsState() {
   for (auto cell : m_songCells) {
     cell->setButtonsState();
   }
+}
+
+void ANDropdownLayer::onShield(CCObject*) {
+  ANShieldPopup::create()->show(); 
 }

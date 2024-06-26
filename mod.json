@@ -1,5 +1,5 @@
 {
-  "geode": "3.0.0-beta.5",
+  "geode": "3.1.1",
   "gd": {
     "win": "2.206",
     "android": "2.206"
@@ -9,6 +9,10 @@
   "name": "Auto Nong",
   "developer": "Flafy",
   "description": "Automatically download NONG songs for levels",
+  "links": {
+    "community": "https://discord.gg/twuZ3X35yM",
+    "source": "https://github.com/flafydev/auto-nong"
+  },
   "repository": "https://github.com/flafydev/auto-nong",
   "tags": [
     "music",
@@ -26,6 +30,7 @@
   "resources": {
     "sprites": [
       "resources/addIcon.png",
+      "resources/mod_btn.png",
       "resources/logo_regular.png",
       "resources/logo_grayscaled.png"
     ]
