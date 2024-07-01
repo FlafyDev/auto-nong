@@ -1,11 +1,18 @@
 # Changelog
 
+## v0.3.0
+###### 01-07-2024
+
+- <cg>Added</c> option to set the start offset of NONGs
+- <co>Upgraded</c> to Geode v3.1.1
+- <co>Upgraded</c> to Jukebox vTODO
+
 ## v0.2.0
 ###### 15-06-2024
 
 - <cg>Added</c> option to create NONGs locally for testing before publishing
 - <cg>Improved</c> internal code for downloading NONGs
-- <cg>Improved</c> improved downloading UI
+- <cg>Improved</c> downloading UI
 - <co>Upgraded</c> to Geode 3.0.0-beta.1
 - <co>Upgraded</c> to Jukebox v2.10.0
 

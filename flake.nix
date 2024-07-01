@@ -30,6 +30,7 @@
         (pkgs.buildFHSUserEnv {
           name = "devshell";
           targetPkgs = pkgs: (with pkgs; [
+            sccache
             cmake
             libz
             # clang_17
