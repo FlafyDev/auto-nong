@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1
+###### 16-08-2024
+
+- <cl>Fixed</c> Cobalt API not working
+- <cl>Fixed</c> YouTube ID not extracted correctly from the URL
+- <co>Upgraded</c> to Geode v3.4.0
+
 ## v0.3.0
 ###### 01-07-2024
 
