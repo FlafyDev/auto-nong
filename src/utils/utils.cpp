@@ -87,7 +87,7 @@ std::optional<std::string> youtubeLinkToID(const std::string &link) {
   std::smatch match;
 
   if (std::regex_search(link, match, youtube_regex) && match.size() > 1) {
-      return match.str(1);
+    return match.str(1);
   }
 
   return std::nullopt;

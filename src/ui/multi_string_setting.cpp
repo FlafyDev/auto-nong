@@ -211,7 +211,8 @@ void MultiStringSettingNode::onDesc(CCObject *) {
 
 void MultiStringSettingNode::updateVisuals() {
   m_resetBtn->setVisible(hasNonDefaultValue());
-  m_label->setColor(hasUncommittedChanges() ? ccColor3B{0x11, 0xdd, 0x00} : ccColor3B{0xff, 0xff, 0xff});
+  m_label->setColor(hasUncommittedChanges() ? ccColor3B{0x11, 0xdd, 0x00}
+                                            : ccColor3B{0xff, 0xff, 0xff});
   this->dispatchChanged();
 }
 

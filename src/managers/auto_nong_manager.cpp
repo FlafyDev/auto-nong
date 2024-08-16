@@ -497,7 +497,8 @@ void AutoNongManager::loadIndex(const std::vector<ANSong *> &indexJson, const st
 std::optional<std::string> AutoNongManager::generatePublishUrl(const ANSong &song, int songId) {
   const auto title = fmt::format("Add {} by {}", song.m_name, song.m_artist);
   const std::string extra =
-      fmt::format("Created from Auto Nong.\nCreated for level: {}\nDownloaded: {}", getCurrentLevelID(), fs::exists(getSongPath(song, false)) ? "Yes" : "No");
+      fmt::format("Created from Auto Nong.\nCreated for level: {}\nDownloaded: {}",
+                  getCurrentLevelID(), fs::exists(getSongPath(song, false)) ? "Yes" : "No");
 
   const std::string extraEncoded = replaceAll(extra, "\n", "%0A");
 
