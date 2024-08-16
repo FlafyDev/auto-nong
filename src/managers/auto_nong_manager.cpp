@@ -100,7 +100,7 @@ void AutoNongManager::createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::p
   if (m_cobaltMetadataListeners.find(path) != m_cobaltMetadataListeners.end()) {
     m_cobaltMetadataListeners.erase(path);
   }
-  const std::string apiUrl = "https://co.wuk.sh/api/json";
+  const std::string apiUrl = "https://api.cobalt.tools/api/json";
   const std::string videoId = song->m_ytId;
 
   std::unordered_map<std::string, std::string> parameters = {
@@ -497,7 +497,7 @@ void AutoNongManager::loadIndex(const std::vector<ANSong *> &indexJson, const st
 std::optional<std::string> AutoNongManager::generatePublishUrl(const ANSong &song, int songId) {
   const auto title = fmt::format("Add {} by {}", song.m_name, song.m_artist);
   const std::string extra =
-      fmt::format("Created from Auto Nong.\nCreated for level: {}", getCurrentLevelID());
+      fmt::format("Created from Auto Nong.\nCreated for level: {}\nDownloaded: {}", getCurrentLevelID(), fs::exists(getSongPath(song, false)) ? "Yes" : "No");
 
   const std::string extraEncoded = replaceAll(extra, "\n", "%0A");
 

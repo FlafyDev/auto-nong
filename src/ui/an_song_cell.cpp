@@ -194,6 +194,7 @@ void ANSongCell::onDownload(CCObject *target) {
 
 void ANSongCell::onPublishSong(CCObject *target) {
   if (auto url = AutoNongManager::get()->generatePublishUrl(*m_anSong, m_songId)) {
+    log::info("Opening URL: {}", url->c_str());
     CCApplication::get()->openURL(url->c_str());
   }
 }

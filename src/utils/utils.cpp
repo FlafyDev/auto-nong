@@ -70,22 +70,27 @@ std::string decompressGz(std::vector<uint8_t> &compressedData, bool isJson) {
   return inflatedString;
 }
 
-// https://youtu.be/dKlkjjO97c8?si=KpUDKu1_37VmDUVK
-// https://www.youtube.com/watch?v=F9GXgPHeKfA&list=PLw9f36HuOEuC1wPukfmrvC8baB3hB0EbR
-// dKlkjjO97c8
+// "dQw4w9WgXcQ"
+// "https://youtu.be/dQw4w9WgXcQ?si=KpUDKu1_37VmDUVK"
+// "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+// "https://youtu.be/dQw4w9WgXcQ?si=t63BpVooXd1p-IEp"
+// "https://youtu.be/dQw4w9WgXcQ"
+// "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDGMEMQ1dJ7wXfLlqCjwV0xfSNbA&start_radio=1&rv=dQw4w9WgXcQ"
+// "https://youtu.be/dQw4w9WgXcQ?si=ghJwHs21HYnOHdUY"
+// "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLw9f36HuOEuC1wPukfmrvC8baB3hB0EbR"
 std::optional<std::string> youtubeLinkToID(const std::string &link) {
-  size_t pos = link.find("=") != std::string::npos ? link.find("=") : link.find_last_of("/");
-
-  if (pos == std::string::npos)
+  if (link.size() == 11) {
     return link;
+  }
 
-  std::string videoId = link.substr(pos + 1);
+  std::regex youtube_regex("(?:youtube\\.com\\/.*[?&]v=|youtu\\.be\\/)([a-zA-Z0-9_-]{11})");
+  std::smatch match;
 
-  size_t ampPos = videoId.find("&");
-  if (ampPos != std::string::npos)
-    videoId = videoId.substr(0, ampPos);
+  if (std::regex_search(link, match, youtube_regex) && match.size() > 1) {
+      return match.str(1);
+  }
 
-  return videoId.empty() ? std::nullopt : std::optional(videoId);
+  return std::nullopt;
 }
 
 std::string replaceAll(std::string str, const std::string &from, const std::string &to) {

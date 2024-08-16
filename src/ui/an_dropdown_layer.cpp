@@ -22,7 +22,7 @@ bool ANDropdownLayer::setup(int songId, CustomSongWidget *parent, int popupNumbe
       fmt::format("{} / {}", popupNumber, totalPopups).c_str(), "chatFont.fnt");
   manifestLabel->setPosition(contentSize.width / 2, 13.f);
   manifestLabel->limitLabelWidth(140.f, 0.6f, 0.1f);
-  manifestLabel->setColor(cc3x(0xc2c2c2));
+  manifestLabel->setColor(ccColor3B{0xc2, 0xc2, 0xc2});
   manifestLabel->setID("manifest-label");
   m_mainLayer->addChild(manifestLabel);
 
