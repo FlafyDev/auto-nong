@@ -7,9 +7,9 @@
 $on_mod(Loaded) {
   Mod::get()->addCustomSetting<MultiStringSettingValue>(
       "indexes2", Mod::get()
-                     ->getSettingDefinition("indexes2")
-                     ->get<CustomSetting>()
-                     ->json->get<std::vector<std::string>>("default"));
+                      ->getSettingDefinition("indexes2")
+                      ->get<CustomSetting>()
+                      ->json->get<std::vector<std::string>>("default"));
   Mod::get()->addCustomSetting<ANClearPPBlacklistSettingValue>("_blacklistPPClear", 0);
 
   AutoNongManager::get()->loadIndexes();
