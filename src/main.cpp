@@ -6,8 +6,8 @@
 
 $on_mod(Loaded) {
   Mod::get()->addCustomSetting<MultiStringSettingValue>(
-      "indexes", Mod::get()
-                     ->getSettingDefinition("indexes")
+      "indexes2", Mod::get()
+                     ->getSettingDefinition("indexes2")
                      ->get<CustomSetting>()
                      ->json->get<std::vector<std::string>>("default"));
   Mod::get()->addCustomSetting<ANClearPPBlacklistSettingValue>("_blacklistPPClear", 0);
@@ -20,5 +20,5 @@ $on_mod(Loaded) {
 
   // Reload the indexes on change
   listenForSettingChanges(
-      "indexes", +[](MultiStringSettingStruct value) { AutoNongManager::get()->loadIndexes(); });
+      "indexes2", +[](MultiStringSettingStruct value) { AutoNongManager::get()->loadIndexes(); });
 }

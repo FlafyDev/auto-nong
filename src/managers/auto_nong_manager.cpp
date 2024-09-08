@@ -406,7 +406,7 @@ void AutoNongManager::downloadSong(std::shared_ptr<ANSong> song, std::optional<i
 
 void AutoNongManager::loadIndexes() {
   std::vector<std::string> indexes =
-      Mod::get()->getSettingValue<MultiStringSettingStruct>("indexes").m_strings;
+      Mod::get()->getSettingValue<MultiStringSettingStruct>("indexes2").m_strings;
 
   unloadAllIndexes();
   loadLocalIndex();

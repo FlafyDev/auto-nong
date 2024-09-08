@@ -153,7 +153,7 @@ bool MultiStringSettingNode::init(MultiStringSettingValue *value, float width) {
   menu->setID("inputs-menu");
 
   // No way to get the JSON without hardcoding the setting ID...
-  auto settingJson = Mod::get()->getSettingDefinition("indexes")->get<CustomSetting>()->json;
+  auto settingJson = Mod::get()->getSettingDefinition("indexes2")->get<CustomSetting>()->json;
   m_defaultValue = settingJson->get<std::vector<std::string>>("default");
   m_name = settingJson->get<std::string>("name");
   m_description = settingJson->get<std::string>("description");

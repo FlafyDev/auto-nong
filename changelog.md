@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.2
+###### 08-09-2024
+
+- <cl>Fixed</c> being unable to download SFH songs
+
+
 ## v0.3.1
 ###### 16-08-2024
 
