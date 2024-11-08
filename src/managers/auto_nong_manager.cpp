@@ -105,8 +105,9 @@ void AutoNongManager::createCobaltDownload(std::shared_ptr<ANYTSong> song, fs::p
 
   std::unordered_map<std::string, std::string> parameters = {
       {"url", fmt::format("https://www.youtube.com/watch?v={}", videoId)},
-      {"aFormat", "mp3"},
-      {"isAudioOnly", "true"}};
+      {"audioFormat", "mp3"},
+      {"downloadMode", "audio"},
+      {"alwaysProxy", "true"}};
 
   matjson::Value parameters_json = matjson::Object();
   for (auto const &[key, value] : parameters) {
